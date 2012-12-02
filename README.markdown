@@ -1,0 +1,1 @@
+This simple userscript can add slideshow capabilities to any site.
