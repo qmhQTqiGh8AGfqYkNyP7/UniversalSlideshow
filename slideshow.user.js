@@ -135,7 +135,7 @@ var PROFILES = [
 		}
 	},
 	{ //............................................................................................................MULTATOR.RU
-		'name': 'multator.ru',
+		'name': 'doodle.multator.ru',
 		'test': function() {
 			return $checkSite(/doodle\.multator\.ru/, null, /\/thread\//);
 		},
@@ -164,17 +164,27 @@ var PROFILES = [
 	{ //............................................................................................................IMAGEBOARDS
 		'name': 'imageboard',
 		'test': function() {
-			var site = w.location.href.toLowerCase();
-			var hana = !!$q(doc, 'script[src*="hanabira"]');
-			var futa = !!$q(doc, 'form[action*="futaba.php"]');
-			var tiny = !!$q(doc, 'form[name*="postcontrols"]');
-			var waka = false;
-			var foot = $q(doc, 'body > p.footer');
-			if(foot) {
-				waka = /wakaba/i.test(foot.innerText);
+			var url = w.location.href;
+			var dm = $domain(url);
+			var aib = false;
+			switch(dm) {
+			case '4chan.org':     aib = true; break;
+			case 'krautchan.net': aib = true; break;
+			case 'britfa.gs':     aib = true; break;
+			case '420chan.org':   aib = true; break;
+			default:
+				if(!aib) aib = !!$q('script[src*="hanabira"]', doc);
+				if(!aib) aib = !!$q('form[action*="futaba.php"]', doc);
+				if(!aib) aib = !!$q('form[name*="postcontrols"]', doc);
+				if(!aib) {
+					var foot = $q(doc, 'body > p.footer');
+					if(foot) {
+						aib = /wakaba/i.test(foot.innerText);
+					}
+				}
 			}
-			if(hana || futa || tiny || waka) {
-				if(/\/.*\/(\d*\..*)?$/.test(site) || /\/(res|thread-\d*?)\/.*$/.test(site)) {
+			if(aib) {
+				if(/\/.*\/((\d*|index)\..*)?$/.test(url) || /\/res\/.*$/.test(url) || /thread-\d*\..*$/.test(url)) {
 					return 1;
 				} else {
 					return -1;
@@ -184,14 +194,28 @@ var PROFILES = [
 		},
 		'scan': function() {
 			var temp = $Q(doc, 'a');
+			var dm = $domain(w.location.href);
 			for(var i = 0, n = temp.length; i < n; i++) {
 				var val = temp[i];
 				var image = val.href;
 				if($isImgExt(image)) {
-					var t = $q(val, 'img');
-					var thumb = t ? t.src : null;
-					var p = $q(val.parentNode, 'blockquote');
-					var post = p ? $clearHTML(p.innerHTML) : null;
+					var dm = $domain(w.location.href);
+					var t, p, thumb, post;
+					if(dm == 'krautchan.net') {
+						if(/(jpe?g|gif|png|bmp|tiff|tga|svg).*(jpe?g|gif|png|bmp|tiff|tga|svg)$/.test(image)) {
+							continue;
+						}
+						if($hasClass(val.parentNode, 'file_thread')) {
+							p = $q(val.parentNode.parentNode, '.postbody > blockquote');
+						} else {
+							p = $q(val.parentNode.parentNode, 'div > blockquote');
+						}
+					} else {
+						p = $q(val.parentNode, 'blockquote');
+					}
+					t = $q(val, 'img');
+					thumb = t ? t.src : null;
+					post = p ? $clearHTML(p.innerHTML) : null;
 					addSlide(image, thumb, post);
 				}
 			}
@@ -1422,10 +1446,13 @@ function testSite() {
 	var i, j;
 	for(i = 0; i < PROFILES.length; i++) {
 		var currentProfile = PROFILES[i];
-		if(currentProfile.test()) {
+		var result = currentProfile.test();
+		if(result === 1) {
 			profile = currentProfile;
 			main();
-			break;
+			return;
+		} else if(result === -1) {
+			return;
 		}
 	}
 }
