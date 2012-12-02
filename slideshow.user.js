@@ -31,11 +31,38 @@ var DEFAULT_SETTINGS = {
 
 var profile;
 var PROFILES = [
+	/*
+	{
+		'name': Just name, doesn't do anything.
+		'test': A function to determine on what site this profile work.
+			It moust return:
+				 -1 if we're on the right site, but on wrong page, and script should not launch on it.
+				  0 if it's not site this profile designed for, shold try something else.
+				  1 if that's exactly what we are looking for, launch script.
+			There is helper function $checkSite(expr, incl, excl), which takes 3 RegExps as arguments. It works that way:
+				It tests window.location.href on each regexp:
+					expr - is regexp what matches site current profile shoul work with. (if null - any)
+					incl - matches pages on this site. Only on this pages script sould launch. (if null - any)
+					excl - matches pages on which script should NOT launch, event if previous expressions was true. (if null - no affect)
+				if(expr) {
+					if(test && !excl) return 1;
+					else return -1;
+				} else {
+					return 0;
+				}
+		'scan': A function-parser to find images on page.
+			No matter how it works, it must find images we want, and call addSlide(image, thumb, post) for each one, where:
+				image (required) - url to full image.
+				thumb (optional) - url to small image that will be shown as thumbnail at bottom panel. If null, it will show just a number.
+				post  (optional) - image description or any other related text that will be shown at the bottom of image.
+			After everything is done, call scanOver() to tell script that we're are ready to begin.
+	}
+	*/
 	{ //............................................................................................................AG.RU
 		'name': 'ag.ru',
-		'expr': [/ag\.ru/],
-		'incl': [/\/games\/.*\/screenshots/],
-		'excl': [],
+		'test': function() {
+			return $checkSite(/ag\.ru/, /\/games\/.*\/screenshots/, null);
+		},
 		'scan': function() {
 			var temp = $Q(doc, '.scrout, .scrout_new');
 			for(var i = 0, n = temp.length; i < n; i++) {
@@ -53,9 +80,9 @@ var PROFILES = [
 	},
 	{ //............................................................................................................RMART.ORG
 		'name': 'rmart.org',
-		'expr': [/rmart\.org/],
-		'incl': [],
-		'excl': [],
+		'test': function() {
+			return $checkSite(/rmart\.org/);
+		},
 		'scan': function() {
 			var temp = $Q(doc, '.thumbnail');
 			var i = 0, n = temp.length;
@@ -81,9 +108,9 @@ var PROFILES = [
 	},
 	{ //............................................................................................................E621.NET
 		'name': 'e621.net',
-		'expr': [/e621\.net/],
-		'incl': [/\/post/],
-		'excl': [/\/post\/show\//],
+		'test': function() {
+			return $checkSite(/e621\.net/, /\/post/, /\/post\/show\//);
+		},
 		'scan': function() {
 			var temp = $Q(doc, '.tooltip-thumb');
 			var i = 0, n = temp.length;
@@ -109,9 +136,9 @@ var PROFILES = [
 	},
 	{ //............................................................................................................MULTATOR.RU
 		'name': 'multator.ru',
-		'expr': [/doodle\.multator\.ru/],
-		'incl': [],
-		'excl': [/\/thread\//],
+		'test': function() {
+			return $checkSite(/doodle\.multator\.ru/, null, /\/thread\//);
+		},
 		'scan': function() {
 			var temp = $Q(doc, '.thread_body');
 			for(var i = 0, n = temp.length; i < n; i++) {
@@ -136,9 +163,25 @@ var PROFILES = [
 	},
 	{ //............................................................................................................IMAGEBOARDS
 		'name': 'imageboard',
-		'expr': [/.*ch/i],
-		'incl': [/\/.*\/(\d*\..*)?$/, /\/res\/.*$/],
-		'excl': [],
+		'test': function() {
+			var site = w.location.href.toLowerCase();
+			var hana = !!$q(doc, 'script[src*="hanabira"]');
+			var futa = !!$q(doc, 'form[action*="futaba.php"]');
+			var tiny = !!$q(doc, 'form[name*="postcontrols"]');
+			var waka = false;
+			var foot = $q(doc, 'body > p.footer');
+			if(foot) {
+				waka = /wakaba/i.test(foot.innerText);
+			}
+			if(hana || futa || tiny || waka) {
+				if(/\/.*\/(\d*\..*)?$/.test(site) || /\/(res|thread-\d*?)\/.*$/.test(site)) {
+					return 1;
+				} else {
+					return -1;
+				}
+			}
+			return 0;
+		},
 		'scan': function() {
 			var temp = $Q(doc, 'a');
 			for(var i = 0, n = temp.length; i < n; i++) {
@@ -157,9 +200,9 @@ var PROFILES = [
 	},
 	{ //............................................................................................................DEFAULT
 		'name': 'default',
-		'expr': [/.*/i],
-		'incl': [],
-		'excl': [],
+		'test': function() {
+			return 1;
+		},
 		'scan': function() {
 			var temp = $Q(doc, 'a');
 			for(var i = 0, n = temp.length; i < n; i++) {
@@ -298,6 +341,18 @@ function $pd(event) {
 
 function $domain(url) {
 	return url.match(/\b[a-z0-9]+\b(\.(aero|asia|biz|cat|com|coop|info|int|jobs|mobi|museum|name|net|org|pro|tel|travel|xxx|edu|gov|mil|a[^abhjkpvy]|b[^cklpqux]|c[^bejpqtw]|d[dejkmoz]|e[ceghrstu]|f[ijkmor]|g[^cjkovxz]|h[kmnrtu]|i[delmnoqrst]|j[emop]|k[eghimnprwyz]|l[abcikrstuvy]|m[^bfij]|n[acefgilopruz]|om|p[aefghklmnrstwy]|qa|r[eosuw]|s[^fpqw]|t[^abeiqsuxy]|u[agksyz]|v[aceginu]|w[fs]|y[etu]|z[amw]))+\b/i)[0].replace(/^www\./i, '');
+}
+
+function $checkSite(expr, incl, excl) {
+	var site = w.location.href.toLowerCase();
+	if((expr ? expr.test(site) : true)) {
+		if((incl ? incl.test(site) : true) && (excl ? !excl.test(site) : true)) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+	return 0;
 }
 
 function $cutTag(html, tagName) {
@@ -1366,36 +1421,13 @@ function testSite() {
 	var site = w.location.href.toLowerCase();
 	var i, j;
 	for(i = 0; i < PROFILES.length; i++) {
-		for(j = 0; j < PROFILES[i].expr.length; j++) {
-			if(PROFILES[i].expr[j].test(site)) {
-				profile = PROFILES[i];
-				break;
-			}
+		var currentProfile = PROFILES[i];
+		if(currentProfile.test()) {
+			profile = currentProfile;
+			main();
+			break;
 		}
-		if(profile) break;
 	}
-	if(!profile) return;
-	if(profile.incl.length > 0) {
-		var include = false;
-		for(i = 0; i < profile.incl.length; i++) {
-			if(profile.incl[i].test(site)) {
-				include = true;
-				break;
-			}
-		}
-		if(!include) return;
-	}
-	if(profile.excl.length > 0) {
-		var exclude = false;
-		for(i = 0; i < profile.excl.length; i++) {
-			if(profile.excl[i].test(site)) {
-				exclude = true;
-				break;
-			}
-		}
-		if(exclude) return;
-	}
-	main();
 }
 
 testSite();
