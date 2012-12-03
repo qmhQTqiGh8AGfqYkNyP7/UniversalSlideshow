@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name Simple slideshow
+// @name Universal Slideshow
 // @description Adds slideshow to large amount of sites.
 // @license MIT
 // @version 1.0
@@ -180,7 +180,7 @@ var PROFILES = [
 				aib.tiny = !!$q('form[name*="postcontrols"]', doc);
 				var foot = $q('body > p.footer', doc);
 				if(foot) {
-					aib.waka = /wakaba/i.test(foot.innerText);
+					aib.waka = /wakaba/i.test(foot.innerText || foot.textContent);
 				}
 				if(aib.hana || aib.futa || aib.tiny || aib.waka) flag = true;
 			}
