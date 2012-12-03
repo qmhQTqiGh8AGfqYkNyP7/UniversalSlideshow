@@ -24,9 +24,9 @@ var DEFAULT_SETTINGS = {
 	/*Boolean*/ 'repeat':            false, //
 	/*Boolean*/ 'thumbs':            false, //
 	/*Boolean*/ 'useHistory':        true,  //
-	/*Integer*/ 'controlsHideDelay': 2,     //Delay in seconds
+	/*Integer*/ 'controlsHideDelay': 2,     // Delay in seconds
 	/*Integer*/ 'maxHistoryLength':  100,   //
-	/*Integer*/ 'slidesChangeDelay': 5      //Delay in seconds
+	/*Integer*/ 'slidesChangeDelay': 5      // Delay in seconds
 };
 
 var profile;
@@ -169,10 +169,10 @@ var PROFILES = [
 			aib.url = w.location.href;
 			aib.dm = $domain(aib.url);
 			switch(aib.dm) {
-			case '4chan.org':     aib._4ch = true; flag = true; break;
-			case 'krautchan.net': aib.krau = true; flag = true; break;
-			case 'britfa.gs':     aib.brit = true; flag = true; break;
 			case '420chan.org':   aib._420 = true; flag = true; break;
+			case '4chan.org':     aib._4ch = true; flag = true; break;
+			case 'britfa.gs':     aib.brit = true; flag = true; break;
+			case 'krautchan.net': aib.krau = true; flag = true; break;
 			case 'sibirchan.ru':  aib.sibi = true; flag = true; break;
 			default:
 				aib.hana = !!$q('script[src*="hanabira"]', doc);
@@ -197,7 +197,7 @@ var PROFILES = [
 		'scan': function() {
 			var temp = $Q('a', doc);
 			for(var i = 0, n = temp.length; i < n; i++) {
-				var val = temp[i]
+				var val = temp[i];
 				var image = val.href;
 				var t = null, thumb = null, p = null, post = null;
 				if(!$isImgExt(image) || $hasClass(val.parentNode, 'filesize') || $hasClass(val.parentNode, 'filename')) {
@@ -216,9 +216,7 @@ var PROFILES = [
 					}
 				} else {
 					p = val.parentNode;
-					console.log(p);
 				}
-				console.log(!!t);
 				if(p) post = $clearHTML(p.innerHTML);
 				addSlide(image, thumb, post);
 			}
