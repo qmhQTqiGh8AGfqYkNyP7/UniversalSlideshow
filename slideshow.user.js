@@ -693,11 +693,11 @@ function elementMove(event) {
 	$sid('img_container').style.top  = event.clientY - $sid('img_container').curY + 'px';
 }
 
-function stopDrag() {
+function stopDrag(event) {
 	$revent(doc.body, {'mousemove': elementMove, 'mouseup': stopDrag});
 }
 
-function startDrag() {
+function startDrag(event) {
 	$pd(event);
 	if(!S.zoomActive) return;
 	$sid('img_container').curX = event.clientX - parseInt($sid('img_container').style.left, 10);
