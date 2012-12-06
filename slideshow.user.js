@@ -22,8 +22,9 @@ var DEFAULT_SETTINGS = {
 	/*Boolean*/ 'pinPost':           false, //
 	/*Boolean*/ 'random':            false, //
 	/*Boolean*/ 'repeat':            false, //
-	/*Boolean*/ 'thumbs':            false, //
+	/*Boolean*/ 'thumbs':            false, // Show thumbnails ribbon
 	/*Boolean*/ 'useHistory':        true,  //
+	/*Boolean*/ 'scrollToSource':    false, //
 	/*Integer*/ 'controlsHideDelay': 2,     // Delay in seconds
 	/*Integer*/ 'maxHistoryLength':  100,   //
 	/*Integer*/ 'slidesChangeDelay': 5      // Delay in seconds
@@ -73,7 +74,7 @@ var PROFILES = [
 					thumb = thumb.substr(5, thumb.length - 7);
 				var image = thumb.replace(/i\.ag\.ru\/ag\/thumbs/i, 'screenshots.ag.ru/ag15/geo').replace(/s(?=(-\w)?\.[^(\/)]*$)/i, '');
 				var post  = $q('.thumb', val).innerHTML;
-				addSlide(image, thumb, post);
+				addSlide(image, thumb, post, val);
 			}
 			scanOver();
 		}
@@ -98,7 +99,7 @@ var PROFILES = [
 					post  = img.alt;
 				$getUrl(url, function(xmlhttp) {
 					var image = /<img[^<>]*?id=['"]image['"][^<]*src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
-					addSlide(image, thumb, post);
+					addSlide(image, thumb, post, val);
 					if(++i >= n) scanOver();
 					else step();
 				});
@@ -126,7 +127,7 @@ var PROFILES = [
 					post  = img.alt;
 				$getUrl(url, function(xmlhttp) {
 					var image = /<a[^<>]*?href=['"](.*?)['"][^<]*?>Download<\/a>/i.exec(xmlhttp.responseText)[1];
-					if(!/\.swf$/i.test(image)) addSlide(image, thumb, post);
+					if(!/\.swf$/i.test(image)) addSlide(image, thumb, post, val);
 					if(++i >= n) scanOver();
 					else step();
 				});
@@ -153,7 +154,7 @@ var PROFILES = [
 						}
 					} else if($hasClass(val, 'doodle_image')) {
 						image = $q('img', val).src;
-						addSlide(image, image, post);
+						addSlide(image, image, post, val);
 						image = null, post = null;
 					}
 				}
@@ -218,7 +219,7 @@ var PROFILES = [
 					p = val.parentNode;
 				}
 				if(p) post = $clearHTML(p.innerHTML);
-				addSlide(image, thumb, post);
+				addSlide(image, thumb, post, val);
 			}
 			scanOver();
 		}
@@ -243,7 +244,7 @@ var PROFILES = [
 					var t = $q('img', val);
 					var thumb = t ? t.src : null;
 					var post = val.innerText || val.textContent;
-					addSlide(image, thumb, post);
+					addSlide(image, thumb, post, val);
 				}
 			}
 			scanOver();
@@ -289,6 +290,9 @@ var preloadImg, // Invisible preloader
 
 // Tweeners
 var thumbScroller;
+var thumbMover;
+var imageMover;
+var imageBounds = {};
 
 /*==============================================================================
 									UTILITES
@@ -354,9 +358,29 @@ function $New(tag, attr, nodes) {
 
 // EVENT UTILITES
 
+// Chrome thinks that mouseup and click are the same thing
+// It fires click event even if mouse was moved between down and up.
+function $fixClickEvent(el, handler) {
+	var down = function(event) {
+		$event(el, events);
+	}
+	var move = function(event) {
+		$revent(el, events);
+	}
+	var up   = function(event) {
+		$revent(el, events);
+		handler(event);
+	}
+	var events = {'mousemove': move, 'mouseup': up};
+	$event(el, {'mousedown': down});
+}
+
 function $event(el, events) {
 	for(var key in events) {
-		el.addEventListener(key, events[key], false);
+		if(key == 'click')
+			$fixClickEvent(el, events[key]);
+		else
+			el.addEventListener(key, events[key], false);
 	}
 	return el;
 }
@@ -398,7 +422,7 @@ function $cutAttr(html, attrName, tags) {
 }
 
 function $clearHTML(html) {
-	return $cutAttr($cutAttr($cutTag(html, '(?:div|img)'), '[^\\s]*?', '[^a][^<>]*?'), '(?:style|class)', 'a');
+	return $cutAttr($cutAttr($cutTag(html, '(?:div|img|blockquote)'), '[^\\s]*?', '[^a][^<>]*?'), '(?:style|class)', 'a');
 }
 
 function $isImgExt(url) {
@@ -474,6 +498,24 @@ function $rand(a, b) {
 	return Math.floor(a + (Math.random() * (b - a)));
 }
 
+function $inRange(val, min, max) {
+	if(val < min) return false;
+	if(val > max) return false;
+	return true;
+}
+
+function $fitInRange(val, min, max) {
+	if(val < min) return min;
+	if(val > max) return max;
+	return val;
+}
+
+function $isValidNumber(val, error) {
+	var result = typeof val == 'number' && !isNaN(val);
+	if(!result && error) throw 'Invalid number: ' + val;
+	return result;
+}
+
 /*==============================================================================
 									Tweener class
 ==============================================================================*/
@@ -481,22 +523,23 @@ function $rand(a, b) {
 /*
  * @constructor 
  */
-function Tweener(getVal, setVal, duration, interval) {
+function Tweener(getVal, setVal, interval) {
 	this.getVal = getVal;
 	this.setVal = setVal;
-	this.duration = duration;
 	this.interval = interval;
 }
 
 Tweener.prototype = {
-	tweenTo: function(position) {
+	tweenTo: function(position, duration) {
 		this._final = position;
+		this.duration = duration;
 		this._start = this.getVal();
 		this._delta = this._final - this._start;
 		this._steps = this.duration / this.interval;
 		if(this._timer == null) this._doTween(this, 1);
 	},
-	tweenBy: function(delta) {
+	tweenBy: function(delta, duration) {
+		this.duration = duration;
 		if(this._timer != null) {
 			this._final += delta;
 			this._delta = this._final - this._start;
@@ -508,16 +551,33 @@ Tweener.prototype = {
 			this._doTween(this, 1);
 		}
 	},
-	tweenSpeed: function(speed) {
+	tweenSpeed: function(speed, accel) {
 		this._speed = speed;
+		this._accel = accel;
+		if(!$isValidNumber(this._speed, true)) return;
+		if(this._speed == 0) {
+			clearTimeout(this._timer);
+			this._timer = null;
+			return;
+		}
 		if(this._timer == null) this._increment(this);
 	},
 	_increment: function(self) {
-		if(self._speed == 0) {
+		if(self._speed == 0) {	
 			self._timer = null;
 			return;
 		}
 		self.setVal(self.getVal() + self._speed);
+		if($isValidNumber(self._accel)) {
+			if(Math.abs(self._speed) + self._accel < 0) {
+				self._speed = 0;
+			} else {
+				if(self._speed > 0)
+					self._speed += self._accel;
+				else
+					self._speed -= self._accel;
+			}
+		}
 		self._timer = setTimeout(function() {
 			self._increment(self);
 		}, self.interval);
@@ -536,6 +596,7 @@ Tweener.prototype = {
 	_delta: null,
 	_final: null,
 	_speed: null,
+	_accel: null,
 	_start: null,
 	_steps: null,
 	_timer: null
@@ -609,14 +670,17 @@ function updateImage() {
 	//Add highlight to current thumb and scroll to
 	var currentThumb = $sid('thumbs').childNodes[currentIndex];
 	$addClass(currentThumb, 'slideshow_thumb_current');
-	thumbScroller.tweenTo(currentThumb.offsetLeft - (($sid('thumbs_container').offsetWidth - currentThumb.offsetWidth) / 2));
+	thumbScroller.tweenTo(currentThumb.offsetLeft - (($sid('thumbs_container').offsetWidth - currentThumb.offsetWidth) / 2), 500);
 
-	currentImg.src = slides[currentIndex].image;
+	var currentSlide = slides[currentIndex];
+	currentImg.src = currentSlide.image;
 	$sid('img').src = ICON_DELAY;
 	$sid('btn_thumbs').innerHTML = (currentIndex + 1) + '/' + slides.length;
-	$sid('post').innerHTML = slides[currentIndex].post;
+	$sid('post').innerHTML = currentSlide.post;
 	checkPostVisibility(/* */); // No args or undefined
 	toggleZoom(false);
+
+	if(settings.scrollToSource && currentSlide.element) currentSlide.element.scrollIntoView();
 }
 
 /*==============================================================================
@@ -685,34 +749,138 @@ function checkHistoryLength() {
 }
 
 /*==============================================================================
-									Image drgag
+									Drag tool
 ==============================================================================*/
 
-function elementMove(event) {
-	$sid('img_container').style.left = event.clientX - $sid('img_container').curX + 'px';
-	$sid('img_container').style.top  = event.clientY - $sid('img_container').curY + 'px';
+// I thought it would be a bit shorter
+function makeDraggable(element, getX, setX, getY, setY, bounds, inertia, speedMultiplier, accel) {
+	var mover, lastX, lastY, horisontal, vertical, isDragging;
+	var lastTime, speed, speedX, speedY, timeout; // inertia vars
+
+	var getSpeed = function() {return 0;};
+	var setSpeed = function(val) {
+		var percent = val / speed;
+		if(horisontal) _setX(element.curX - speedX * percent);
+		if(vertical  ) _setY(element.curY - speedY * percent);
+	};
+
+	var _setX = function(val) {
+		if(mover.bounds) {
+			if(!isDragging && !$inRange(val, mover.bounds.minX, mover.bounds.maxX))
+				mover.cancel();
+			val = $fitInRange(val, mover.bounds.minX, mover.bounds.maxX);
+		}
+		element.curX = val;
+		mover.setX(element.curX);
+	}
+	var _setY = function(val) {
+		if(mover.bounds) {
+			if(!isDragging && !$inRange(val, mover.bounds.minY, mover.bounds.maxY))
+				mover.cancel();
+			val = $fitInRange(val, mover.bounds.minY, mover.bounds.maxY);
+		}
+		element.curY = val;
+		mover.setY(element.curY);
+	}
+
+	var onMove = function(event) {
+		var deltaX = lastX - event.screenX; lastX = event.screenX;
+		var deltaY = lastY - event.screenY; lastY = event.screenY;
+		if(mover.inertia) {
+			clearTimeout(timeout);
+			var nowTime = (new Date()).getTime();
+			var deltaTime = nowTime - lastTime;
+			speedX = deltaX / deltaTime;
+			speedY = deltaY / deltaTime;
+			lastTime = nowTime;
+			timeout = setTimeout(function() {
+				speedX = 0; speedY = 0;
+			}, 100);
+		}
+		if(horisontal) _setX(element.curX - deltaX);
+		if(vertical  ) _setY(element.curY - deltaY);
+	};
+
+	var stopDrag = function(event) {
+		$revent(doc.body, {'mousemove': onMove, 'mouseup': stopDrag});
+		clearTimeout(timeout);
+		if(mover.inertia) {
+			if(horisontal && vertical)
+				speed = Math.sqrt(speedX * speedX + speedY * speedY);
+			else if(horisontal)
+				speed = speedX;
+			else
+				speed = speedY;
+			mover.tweener.tweenSpeed(speed * mover.speedMultiplier, accel);
+		}
+		isDragging = false;
+		//event.stopPropagation();
+	};
+
+	var startDrag = function(event) {
+		$pd(event);
+		horisontal = mover.getX && mover.setX && typeof mover.getX == 'function' && typeof mover.setX == 'function';
+		vertical   = mover.getY && mover.setY && typeof mover.getY == 'function' && typeof mover.setY == 'function';
+		if(!(horisontal || vertical)) {
+			throw 'No setters';
+			return;
+		}
+		if(!element || typeof element != 'object') {
+			throw 'Invalid element';
+			return;
+		}
+		if(mover.inertia && !mover.tweener)
+			mover.tweener = new Tweener(getSpeed, setSpeed, 30);
+
+		speed = 0; speedX = 0; speedY = 0;
+		isDragging = true;
+		lastTime = (new Date()).getTime();
+		lastX = event.screenX;
+		lastY = event.screenY;
+		if(horisontal) element.curX = mover.getX();
+		if(vertical  ) element.curY = mover.getY();
+		if(mover.inertia) mover.tweener.tweenSpeed(0); // Stop
+		$event(doc.body, {'mousemove': onMove, 'mouseup': stopDrag});
+	};
+
+	mover = {
+		'activate': function() {
+			$event(element, {'mousedown': startDrag});
+		},
+		'deactivate': function() {
+			if(this.inertia && this.tweener) this.tweener.tweenSpeed(0);
+			$revent(element, {'mousedown': startDrag});
+		},
+		'cancel': function() {
+			$revent(doc.body, {'mousemove': onMove, 'mouseup': stopDrag});
+			if(this.inertia && this.tweener) this.tweener.tweenSpeed(0);
+			isDragging = false;
+		},
+		'getX': getX,
+		'setX': setX,
+		'getY': getY,
+		'setY': setY,
+		'bounds': bounds,
+		'inertia': inertia,
+		'speedMultiplier': speedMultiplier,
+		'accel': accel
+	};
+	return mover;
 }
 
-function stopDrag(event) {
-	$revent(doc.body, {'mousemove': elementMove, 'mouseup': stopDrag});
-}
-
-function startDrag(event) {
-	$pd(event);
-	if(!S.zoomActive) return;
-	$sid('img_container').curX = event.clientX - parseInt($sid('img_container').style.left, 10);
-	$sid('img_container').curY = event.clientY - parseInt($sid('img_container').style.top, 10);
-	$event(doc.body, {'mousemove': elementMove, 'mouseup': stopDrag});
-}
+/*==============================================================================
+									Image resize
+==============================================================================*/
 
 function toggleZoom(isOn) {
 	S.zoomActive = isOn != undefined ? isOn : !S.zoomActive;
 	if(S.zoomActive) {
-		$event($sid('img'), {'mousedown': startDrag});
+		imageMover.activate();
+		$sid('img_container').style.border = '1px solid white';
 		$event($sid('img'), {'mousewheel': resizeImage, 'DOMMouseScroll': resizeImage});
 	} else {
-		stopDrag();
-		$revent($sid('img'), {'mousedown': startDrag});
+		imageMover.deactivate();
+		$sid('img_container').style.border = '';
 		$revent($sid('img'), {'mousewheel': resizeImage, 'DOMMouseScroll': resizeImage});
 	}
 	fitImage(S.zoomActive);
@@ -733,6 +901,7 @@ function resizeImage(event) {
 	$sid('img_container').style.height = newH + 'px';
 	$sid('img_container').style.left = parseInt(curX - (newW/oldW) * (curX - oldL), 10) + 'px';
 	$sid('img_container').style.top  = parseInt(curY - (newH/oldH) * (curY - oldT), 10) + 'px';
+	checkImageBounds();
 }
 
 function fitImage(full) {
@@ -770,6 +939,7 @@ function fitImage(full) {
 	$sid('img_container').style.height = newHeight + 'px';
 	$sid('img_container').style.top  = ((wh - newHeight) / 2) + 5 + 'px';
 	$sid('img_container').style.left = ((ww - newWidth ) / 2) + 5 + 'px';
+	checkImageBounds();
 }
 
 /*==============================================================================
@@ -796,18 +966,26 @@ var EventHandlers = {
 
 	windowResize: {'resize': function(){fitImage(/* */);}}, // No arguments or undefined
 	shortcuts: {
-		'keydown': function(event) {
-			if(event.keyCode == 32 /*space*/) togglePause(/* */); // No arguments or undefined
-			else if(event.keyCode == 81 /*q*/ || event.keyCode == 27 /* esc */) toggleSlideshow();
-			else if(event.keyCode == 88 /*x*/ || event.keyCode == 39 /*right*/ || event.keyCode == 40 /*down*/) nextImage();
-			else if(event.keyCode == 90 /*z*/ || event.keyCode == 37 /*left */ || event.keyCode == 38 /* up */) prevImage();
-			else return;
-			$pd(event);
-		}
-	},
+	'keydown': function(event) {
+		if(event.keyCode == 32 /*space*/) togglePause(/* */); // No arguments or undefined
+		else if(event.keyCode == 81 /*q*/ || event.keyCode == 27 /* esc */) toggleSlideshow();
+		else if(event.keyCode == 88 /*x*/ || event.keyCode == 39 /*right*/ || event.keyCode == 40 /*down*/) nextImage();
+		else if(event.keyCode == 90 /*z*/ || event.keyCode == 37 /*left */ || event.keyCode == 38 /* up */) prevImage();
+		else return;
+		$pd(event);
+	}},
 
 	thumbClick: {'click': function(event){jumpTo(event.currentTarget.value);}, 'mousedown': $pd}
 };
+
+function checkImageBounds() {
+	imageBounds.minX = -$sid('img_container').offsetWidth  + 200;
+	imageBounds.minY = -$sid('img_container').offsetHeight + 200;
+	imageBounds.maxX = w.innerWidth  - 200;
+	imageBounds.maxY = w.innerHeight - 200;
+	$sid('img_container').style.left = $fitInRange(parseInt($sid('img_container').style.left, 10), imageBounds.minX, imageBounds.maxX) + 'px';
+	$sid('img_container').style.top  = $fitInRange(parseInt($sid('img_container').style.top , 10), imageBounds.minY, imageBounds.maxY) + 'px';
+}
 
 function toggleSlideshow() {
 	S.isVisible = !S.isVisible;
@@ -929,14 +1107,14 @@ function stopSlideshow() {
 	doc.body.style.overflow = 'auto';
 }
 
-function addSlide(image, thumb, post) {
+function addSlide(image, thumb, post, element) {
 	if(!image) return;
 	var dupeIndex = slides._indexOfObjectWithValue('image', image);
 	if(dupeIndex != -1) {
 		if(!slides[dupeIndex].thumb && thumb) slides[dupeIndex].thumb = thumb;
 		if(!slides[dupeIndex].post  && post ) slides[dupeIndex].post  = post;
 	} else {
-		slides.push({'image': image, 'thumb': thumb, 'post': post});
+		slides.push({'image': image, 'thumb': thumb, 'post': post, 'element': element});
 	}
 }
 
@@ -985,6 +1163,30 @@ function addElements() {
 		checkSlideChangeTimer();
 		fitImage();
 	}});
+
+	imageMover = makeDraggable($sid('img_container'),
+		function(){return parseInt($sid('img_container').style.left, 10);},
+		function(val){$sid('img_container').style.left = val + 'px';},
+		function(){return parseInt($sid('img_container').style.top,  10);},
+		function(val){$sid('img_container').style.top  = val + 'px';},
+		imageBounds, true, 5, -1);
+
+	thumbMover = makeDraggable($sid('thumbs_container'),
+		function(){return -$sid('thumbs_container').scrollLeft;},
+		function(val){$sid('thumbs_container').scrollLeft = -val;},
+		null, null, null, true, 10, -1);
+	thumbMover.activate();
+
+	thumbScroller = new Tweener(function(){
+			return $sid('thumbs_container').scrollLeft;
+		},
+		function(value){
+			$sid('thumbs_container').scrollLeft = value;
+			thumbMover.cancel();
+		}, 30);
+
+	addScrollButton($sid('thumbs_scroll_left'),  thumbScroller, -10, -30);
+	addScrollButton($sid('thumbs_scroll_right'), thumbScroller,  10,  30);
 }
 
 function loadSettings() {
@@ -993,6 +1195,11 @@ function loadSettings() {
 		settings = DEFAULT_SETTINGS;
 	} else {
 		settings = JSON.parse(storage);
+		for(key in DEFAULT_SETTINGS) {
+			if(!(key in settings)) {
+				settings[key] = DEFAULT_SETTINGS[key];
+			}
+		}
 	}
 
 	$sid('settings_b_defaultPlay').checked     = settings.defaultPlay;
@@ -1000,6 +1207,7 @@ function loadSettings() {
 	$sid('settings_b_overlayThumbs').checked   = settings.overlayThumbs;
 	$sid('settings_b_pinPost').checked         = settings.pinPost;
 	$sid('settings_b_useHistory').checked      = settings.useHistory;
+	$sid('settings_b_scrollToSource').checked  = settings.scrollToSource;
 	$sid('settings_i_controlsHideDelay').value = settings.controlsHideDelay;
 	$sid('settings_i_maxHistoryLength').value  = settings.maxHistoryLength;
 	$sid('settings_i_slidesChangeDelay').value = settings.slidesChangeDelay;
@@ -1024,6 +1232,7 @@ function saveSettings() {
 	settings.overlayThumbs     = $sid('settings_b_overlayThumbs').checked;
 	settings.pinPost           = $sid('settings_b_pinPost').checked;
 	settings.useHistory        = $sid('settings_b_useHistory').checked;
+	settings.scrollToSource    = $sid('settings_b_scrollToSource').checked;
 	settings.controlsHideDelay = $sid('settings_i_controlsHideDelay').value;
 	settings.maxHistoryLength  = $sid('settings_i_maxHistoryLength').value;
 	settings.slidesChangeDelay = $sid('settings_i_slidesChangeDelay').value;
@@ -1051,27 +1260,21 @@ function addListeners() {
 	$event($sid('settings_b_overlayThumbs'),     EventHandlers.configChange);
 	$event($sid('settings_b_pinPost'),           EventHandlers.configChange);
 	$event($sid('settings_b_useHistory'),        EventHandlers.configChange);
+	$event($sid('settings_b_scrollToSource'),    EventHandlers.configChange);
 	$event($sid('settings_i_controlsHideDelay'), EventHandlers.configChange);
 	$event($sid('settings_i_maxHistoryLength'),  EventHandlers.configChange);
 	$event($sid('settings_i_slidesChangeDelay'), EventHandlers.configChange);
 
-	thumbScroller = new Tweener(function(){return $sid('thumbs_container').scrollLeft;},
-		                        function(value){$sid('thumbs_container').scrollLeft = value;},
-		                        500, 30);
-
 	var scrollThumbsByWheel = function(event) {
 		if(!event.wheelDelta) event.wheelDelta = -40 * event.detail;
 		$pd(event);
-		thumbScroller.tweenBy(-event.wheelDelta);
+		thumbScroller.tweenBy(-event.wheelDelta, 500);
 	};
+
 	$event($sid('thumbs_container'), {'mousewheel': scrollThumbsByWheel, 'DOMMouseScroll': scrollThumbsByWheel});
 
 	$event($sid('img'), EventHandlers.imageClick);
-
 	$event(w, EventHandlers.windowResize);
-
-	addScrollButton($sid('thumbs_scroll_left'),  thumbScroller, -10, -30);
-	addScrollButton($sid('thumbs_scroll_right'), thumbScroller,  10,  30);
 }
 
 function addScrollButton(el, tweener, overSpeed, downSpeed) {
@@ -1124,6 +1327,22 @@ function main() {
 	loadSettings();
 }
 
+function testSite() {
+	var site = w.location.href.toLowerCase();
+	var i, j;
+	for(i = 0; i < PROFILES.length; i++) {
+		var currentProfile = PROFILES[i];
+		var result = currentProfile.test();
+		if(result === 1) {
+			profile = currentProfile;
+			main();
+			return;
+		} else if(result === -1) {
+			return;
+		}
+	}
+}
+
 /*==============================================================================
 									CSS
 ==============================================================================*/
@@ -1165,6 +1384,7 @@ var SLIDESHOW_CSS = "\
 	margin: 0;\n\
 	outline: 0;\n\
 	padding: 0;\n\
+	text-align: left;\n\
 	text-decoration: none;\n\
 	transition: none;\n\
 	vertical-align: baseline;\n\
@@ -1192,12 +1412,12 @@ var SLIDESHOW_CSS = "\
 	display: table;\n\
 	height: 25px;\n\
 	letter-spacing: .3em;\n\
-	text-align: center;\n\
 	width: 100%;\n\
 }\n\
 #slideshow h1 span {\n\
 	display: table-cell;\n\
 	font-weight: bold;\n\
+	text-align: center;\n\
 	vertical-align: middle;\n\
 }\n\
 #slideshow #slideshow_menu, #slideshow #slideshow_load, #slideshow #slideshow_screen {\n\
@@ -1412,11 +1632,12 @@ var SLIDESHOW_HTML = "\
 			<h1><span>SETTINGS</span></h1>\n\
 			<hr />\n\
 			<div>\n\
-				<label title=''><input type='checkbox' id='slideshow_settings_b_defaultPlay'      />Play on start</label>\n\
-				<label title=''><input type='checkbox' id='slideshow_settings_b_useHistory'       />Use history</label>\n\
-				<label title=''><input type='checkbox' id='slideshow_settings_b_keepNexthistory'  />Keep next history</label>\n\
-				<label title=''><input type='checkbox' id='slideshow_settings_b_overlayThumbs'    />Overlay thumbs</label>\n\
-				<label title=''><input type='checkbox' id='slideshow_settings_b_pinPost'          />Pin post</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_defaultPlay'    />Play on start</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_useHistory'     />Use history</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_keepNexthistory'/>Keep next history</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_overlayThumbs'  />Overlay thumbs</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_pinPost'        />Pin post</label>\n\
+				<label title=''><input type='checkbox' id='slideshow_settings_b_scrollToSource' />Scroll page</label>\n\
 				<label title='Delay in seconds, 0 = Never hide'>\n\
 					<input type='number' min='0' max='999' id='slideshow_settings_i_controlsHideDelay'/>Controls hide delay</label>\n\
 				<label title='0 = Keep all'>\n\
@@ -1437,7 +1658,7 @@ var SLIDESHOW_HTML = "\
 		<div id='slideshow_thumbs_container' class='slideshow_black' unselectable='on' style='display: none;'>\n\
 			<div id='slideshow_thumbs_scroll_left'></div>\n\
 			<div id='slideshow_thumbs_scroll_right'></div>\n\
-			<div id='slideshow_thumbs' unselectable='on'></div>\n\
+			<div id='slideshow_thumbs' unselectable='on' style='left: 0;'></div>\n\
 		</div>\n\
 		<a class='slideshow_btn slideshow_top    slideshow_right' unselectable='on' id='slideshow_btn_close'   ><div class='slideshow_icon slideshow_normal slideshow_icon_close'   ></div></a>\n\
 		<a class='slideshow_btn slideshow_top    slideshow_left'  unselectable='on' id='slideshow_btn_settings'><div class='slideshow_icon slideshow_normal slideshow_icon_settings'></div></a>\n\
@@ -1450,22 +1671,6 @@ var SLIDESHOW_HTML = "\
 	</div>\n\
 </div>\n\
 ";
-
-function testSite() {
-	var site = w.location.href.toLowerCase();
-	var i, j;
-	for(i = 0; i < PROFILES.length; i++) {
-		var currentProfile = PROFILES[i];
-		var result = currentProfile.test();
-		if(result === 1) {
-			profile = currentProfile;
-			main();
-			return;
-		} else if(result === -1) {
-			return;
-		}
-	}
-}
 
 testSite();
 
