@@ -59,6 +59,16 @@ var PROFILES = [
 			After everything is done, call scanOver() to tell script that we're are ready to begin.
 	}
 	*/
+	{ //............................................................................................................BROWSER'S INTERNAL PAGE
+		'name': 'Browser\'s internal page',
+		'test': function() {
+			if(/^(?:about|chrome|opera|res)/i.test(w.location.href)) {
+				return -1;
+			}
+			return 0;
+		},
+		'scan': null // This is just dummy profile
+	},
 	{ //............................................................................................................AG.RU
 		'name': 'ag.ru',
 		'test': function() {
@@ -115,7 +125,7 @@ var PROFILES = [
 		'scan': function() {
 			var temp = $Q('.tooltip-thumb', doc);
 			var i = 0, n = temp.length;
-			if(n == 0) {
+			if(!n) {
 				scanOver();
 				return;
 			}
@@ -138,7 +148,7 @@ var PROFILES = [
 	{ //............................................................................................................MULTATOR.RU
 		'name': 'doodle.multator.ru',
 		'test': function() {
-			return $checkSite(/doodle\.multator\.ru/, null, /\/thread\//);
+			return $checkSite(/doodle\.multator\.ru/);
 		},
 		'scan': function() {
 			var temp = $Q('.thread_body', doc);
@@ -165,50 +175,48 @@ var PROFILES = [
 	{ //............................................................................................................IMAGEBOARDS
 		'name': 'imageboard',
 		'test': function() {
-			var flag = false;
-			aib = {};
-			aib.url = w.location.href;
-			aib.dm = $domain(aib.url);
-			switch(aib.dm) {
-			case '420chan.org':   aib._420 = true; flag = true; break;
-			case '4chan.org':     aib._4ch = true; flag = true; break;
-			case 'britfa.gs':     aib.brit = true; flag = true; break;
-			case 'krautchan.net': aib.krau = true; flag = true; break;
-			case 'sibirchan.ru':  aib.sibi = true; flag = true; break;
+			var dm = $domain(w.location.hostname);
+			var aib = {};
+			switch(dm) {
+			case '4chan.org': aib.fch = true; break;
+			case 'krautchan.net': aib.krau = true; break;
+			case 'britfa.gs': aib.brit = true; break;
 			default:
-				aib.hana = !!$q('script[src*="hanabira"]', doc);
 				aib.futa = !!$q('form[action*="futaba.php"]', doc);
 				aib.tiny = !!$q('form[name*="postcontrols"]', doc);
-				var foot = $q('body > p.footer', doc);
-				if(foot) {
-					aib.waka = /wakaba/i.test(foot.innerText || foot.textContent);
-				}
-				if(aib.hana || aib.futa || aib.tiny || aib.waka) flag = true;
 			}
-			if(flag) {
-				// TODO: detect frames and non-board pages
-				if(aib.sibi && !(/\/.*\/((\d*|index)\..*)?$/.test(aib.url) || /\/res\/.*$/.test(aib.url))) {
-					return 0;
-				}
-				this.aib = aib;
-				return 1;
+			var qDForm =
+				aib.brit ? '.threadz' :
+				aib.krau ? 'form[action*="delete"]' :
+				aib.tiny ? 'form[name="postcontrols"]' :
+				aib.futa ? 'form:not([enctype])' :
+				'#delform, form[name="delform"]';
+			var dForm = $q(qDForm + ', #de-panel', doc);
+			if(!dForm) {
+				return 0;
 			}
-			return 0;
+			aib.cFileInfo =
+				aib.fch ? 'fileText' :
+				aib.krau ? 'filename' :
+				aib.brit ? 'threadlinktext' :
+				'filesize';
+			this.aib = aib;
+			return 1;
 		},
 		'scan': function() {
-			var temp = $Q('a', doc);
+			var temp = $Q(qImgLink, doc);
 			for(var i = 0, n = temp.length; i < n; i++) {
 				var val = temp[i];
 				var image = val.href;
 				var t = null, thumb = null, p = null, post = null;
-				if(!$isImgExt(image) || $hasClass(val.parentNode, 'filesize') || $hasClass(val.parentNode, 'filename')) {
+				if($hasClass(val.parentNode, this.aib.cFileInfo)) {
 					continue;
 				}
 				t = $q('img', val);
 				if(!!t) {
 					thumb = t.src;
-					if(this.aib.krau) {
-						p = $q('div > blockquote', val.parentNode.parentNode);
+					if(this.aib.krau || this.aib.fch) {
+						p = $q('blockquote', val.parentNode.parentNode);
 					} else {
 						p = val.nextElementSibling;
 						while(p && p.tagName.toLowerCase() != 'blockquote') {
@@ -227,25 +235,20 @@ var PROFILES = [
 	{ //............................................................................................................DEFAULT
 		'name': 'default',
 		'test': function() {
-			var temp = $Q('a', doc);
-			for(var i = 0, n = temp.length; i < n; i++) {
-				if($isImgExt(temp[i].href)) {
-					return 1;
-				}
-			}
+			if(w.self != w.top) return -1;
+			var temp = $Q(qImgLink, doc);
+			if(temp.length) return 1;
 			return 0;
 		},
 		'scan': function() {
-			var temp = $Q('a', doc);
+			var temp = $Q(qImgLink, doc);
 			for(var i = 0, n = temp.length; i < n; i++) {
 				var val = temp[i];
 				var image = val.href;
-				if($isImgExt(image)) {
-					var t = $q('img', val);
-					var thumb = t ? t.src : null;
-					var post = val.innerText || val.textContent;
-					addSlide(image, thumb, post, val);
-				}
+				var t = $q('img', val);
+				var thumb = t ? t.src : null;
+				var post = val.innerText || val.textContent || t ? t.alt : null;
+				addSlide(image, thumb, post, val);
 			}
 			scanOver();
 		}
@@ -271,6 +274,8 @@ var S = {
 //slideshow vars
 var slides = []; // Array of Objects {url image, url thumb, string post}
 var hist = new SlideshowHistory();
+
+var qImgLink = 'a[href$=".jpg"], a[href$=".jpeg"], a[href$=".png"], a[href$=".gif"], a[href$=".svg"]';
 
 /*
  * @constructor 
@@ -432,6 +437,7 @@ function $isImgExt(url) {
 // CSS UTILITES
 
 function $hasClass(el, className) {
+	if(!className) return false;
 	return (' ' + el.className + ' ').indexOf(' ' + className + ' ') !== -1;
 }
 
@@ -563,7 +569,7 @@ Tweener.prototype = {
 		if(this._timer == null) this._increment(this);
 	},
 	_increment: function(self) {
-		if(self._speed == 0) {	
+		if(self._speed == 0) {
 			self._timer = null;
 			return;
 		}
@@ -948,9 +954,9 @@ function fitImage(full) {
 
 var EventHandlers = {
 	imageOverOut: {'mouseover': function(){checkPostVisibility(true );},
-	                'mouseout' : function(){checkPostVisibility(false);}},
+	                'mouseout': function(){checkPostVisibility(false);}},
 	ctrlsOverOut: {'mouseover': function(){checkControlsVisibility(true );},
-	                'mouseout' : function(){checkControlsVisibility(false);}},
+	                'mouseout': function(){checkControlsVisibility(false);}},
 	screenMove  : {'mousemove': function(){checkControlsVisibility(/* */);}}, // No arguments or undefined
 	imageClick  : {'dblclick' : function(){toggleZoom(/* */);}, 'mousedown': $pd}, // No arguments or undefined
 
@@ -1329,7 +1335,7 @@ function main() {
 
 function testSite() {
 	var site = w.location.href.toLowerCase();
-	var i, j;
+	var i;
 	for(i = 0; i < PROFILES.length; i++) {
 		var currentProfile = PROFILES[i];
 		var result = currentProfile.test();
@@ -1576,11 +1582,11 @@ var SLIDESHOW_CSS = "\
 	display: table;\n\
 	width: 160px;\n\
 	height: 140px;\n\
-	text-align: center;\n\
 }\n\
 #slideshow #slideshow_thumbs .slideshow_thumb_number span {\n\
 	display: table-cell;\n\
 	font-size: 5em;\n\
+	text-align: center;\n\
 	vertical-align: middle;\n\
 }\n\
 #slideshow #slideshow_thumbs img {max-height: 150px;}\n\
