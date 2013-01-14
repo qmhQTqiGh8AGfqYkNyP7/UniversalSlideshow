@@ -1,21 +1,21 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.1.13.0
+// @version     13.1.14.0
 // @license     MIT
-// @description Adds slideshow to large amount of sites.
-// @icon		https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
+// @description Adds slideshow to large amount of sites
+// @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
 // @updateURL   https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/slideshow.user.js
 // @include     *   
 // ==/UserScript==
 
 (function(window, undefined) {
-var version = '13.1.13.0'
+var version = '13.1.14.0'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
 
 /*==============================================================================
-									Vars
+                                    Vars
 ==============================================================================*/
 
 var settings;
@@ -372,7 +372,7 @@ var thumbScroller, thumbMover, imageMover;
 var imageBounds = {};
 
 /*==============================================================================
-									UTILITES
+                                    UTILITES
 ==============================================================================*/
 
 // DOM UTILITES
@@ -627,7 +627,7 @@ function $oneTransition(el, callback) {
 }
 
 /*==============================================================================
-									Tweener class
+                                    Tweener class
 ==============================================================================*/
 
 /*
@@ -713,7 +713,7 @@ Tweener.prototype = {
 };
 
 /*==============================================================================
-									Array prototype
+                                    Array prototype
 ==============================================================================*/
 
 Array.prototype._indexOfObjectWithValue = function(key, value) {
@@ -735,7 +735,7 @@ Array.prototype._difference = function(array) {
 };
 
 /*==============================================================================
-									Slideshow
+                                    Slideshow
 ==============================================================================*/
 
 function prepareNextImage() {
@@ -797,7 +797,7 @@ function updateImage() {
 }
 
 /*==============================================================================
-									Playback
+                                    Playback
 ==============================================================================*/
 
 // BUGS, BUGS EVERYWHERE!
@@ -862,7 +862,7 @@ function checkHistoryLength() {
 }
 
 /*==============================================================================
-									Drag tool
+                                    Drag tool
 ==============================================================================*/
 
 // I thought it would be a bit shorter
@@ -982,7 +982,7 @@ function makeDraggable(element, getX, setX, getY, setY, bounds, inertia, speedMu
 }
 
 /*==============================================================================
-									Image resize
+                                    Image resize
 ==============================================================================*/
 
 function toggleZoom(isOn) {
@@ -1055,7 +1055,7 @@ function fitImage(full) {
 }
 
 /*==============================================================================
-									Events
+                                    Events
 ==============================================================================*/
 
 var EventHandlers = {
@@ -1119,7 +1119,7 @@ function checkSlideChangeTimer() {
 }
 
 /*==============================================================================
-									Show/hide
+                                    Show/hide
 ==============================================================================*/
 
 function checkControlsVisibility(show) {
@@ -1157,7 +1157,7 @@ function forceRedraw() {
 }
 
 /*==============================================================================
-									Launch
+                                    Launch
 ==============================================================================*/
 
 function startSlideshow () {
@@ -1212,11 +1212,12 @@ function addSlide(image, thumb, post, element) {
 function addThumb(src, n) {
 	// "<a class='slow-thumb' unselectable='on'><img src='" + src + "'></a>";
 	// "<a class='slow-thumb' unselectable='on'><div text='" + (n + 1) + "'></a>";
-	var thumb = $New('a', {'class': 'slow-thumb', 'unselectable': 'on', 'value': n},
-		[src ? $new('img', {'src': src, 'class': 'slow-thumb-img'}) :
-		       $New('div', {'class': 'slow-thumb-number', 'unselectable': 'on'}, [$new('span', {'text': (n + 1)})])
-		]
-	);
+	var thumb = $New('a', {'class': 'slow-thumb', 'unselectable': 'on', 'value': n}, [
+		src ? $new('img', {'src': src, 'class': 'slow-thumb-img'}) :
+		$New('div', {'class': 'slow-thumb-number', 'unselectable': 'on'}, [
+			$new('span', {'text': (n + 1)})
+		])
+	]);
 	$event(thumb, EventHandlers.thumbClick);
 	$append($sid('thumbs'), [thumb]);
 }
@@ -1234,7 +1235,7 @@ function clearThumbs() {
 }
 
 /*==============================================================================
-									Settings
+                                    Settings
 ==============================================================================*/
 
 function loadSettings() {
@@ -1340,7 +1341,6 @@ function addSettings() {
 			$new('input', {'id': 'slow-settings-' + name, 'type': 'checkbox', 'info': name},
 				{'change': function(e){
 					setSettingsProperty(name, e.target.checked);
-					if(name in settingsUpdater) settingsUpdater[name].call()}
 				}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
@@ -1351,7 +1351,6 @@ function addSettings() {
 			$new('input', {'id': 'slow-settings-' + name, 'type': 'number', 'info': name, 'min': min, 'max': max},
 				{'change': function(e){
 					setSettingsProperty(name, e.target.value);
-					if(name in settingsUpdater) settingsUpdater[name].call()}
 				}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
@@ -1371,7 +1370,6 @@ function addSettings() {
 			$event(sel,
 				{'change': function(e){
 					setSettingsProperty(name, e.target.selectedIndex);
-					if(name in settingsUpdater) settingsUpdater[name].call()}
 				}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
@@ -1414,7 +1412,9 @@ function addSettings() {
 				helpstr('playPause')  + '<br>' +
 				helpstr('prevImage')  + '<br>' +
 				helpstr('nextImage')  + '<br>' +
-				helpstr('quit') + '</span>')
+				helpstr('quit') + '<br>' +
+				'<a href="https://github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow" class="slow-link" target="_blank">Github</a>' +
+				'</span>')
 		])
 	]);
 	$append($sid('settings-buttons'), [
@@ -1432,7 +1432,7 @@ function addSettings() {
 }
 
 /*==============================================================================
-							Script initialization
+                            Script initialization
 ==============================================================================*/
 
 function addElements() {
@@ -1583,7 +1583,7 @@ function testSite() {
 }
 
 /*==============================================================================
-									ICONS
+                                    ICONS
 ==============================================================================*/
 
 // SVG icons from Iconic icon set http://somerandomdude.com/work/iconic/
@@ -1613,7 +1613,7 @@ function testSite() {
 })();
 
 /*==============================================================================
-									HTML
+                                    HTML
 ==============================================================================*/
 
 function addHTML() {
@@ -1664,7 +1664,7 @@ function addHTML() {
 }
 
 /*==============================================================================
-									CSS
+                                    CSS
 ==============================================================================*/
 
 function addCSS() {
@@ -1811,8 +1811,8 @@ function addCSS() {
 	position: absolute;\n\
 	right: 5px;\n\
 }\n\
-#slow-post a {text-decoration: underline;}\n\
-#slow-post a:hover {color: #08c;}\n\
+#slow-post a, #slow a.slow-link {text-decoration: underline;}\n\
+#slow-post a:hover, #slow a.slow-link:hover {color: #08c;}\n\
 #slow-thumbs-ribbon {\n\
 	bottom: 0;\n\
 	left: 0;\n\
