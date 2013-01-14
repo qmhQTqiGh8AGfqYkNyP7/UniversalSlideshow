@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.1.14.0
+// @version     13.1.14.1
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -9,7 +9,7 @@
 // ==/UserScript==
 
 (function(window, undefined) {
-var version = '13.1.14.0'
+var version = '13.1.14.1'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -93,6 +93,7 @@ var LOC = {
 			'key-toggleZoom':    ['Двойной клик по слайду', 'Double click on image'],
 			    'zoomInOut':     ['Увеличить/уменьшить', 'Zoom in/out'],
 			'key-zoomInOut':         ['Колесико мыши', 'Mouse wheel'],
+			'version':           ['Версия:', 'Version:'],
 		'reset':             ['Сброс', 'Reset']
 	},
 	str: { // common strings
@@ -1341,7 +1342,7 @@ function addSettings() {
 			$new('input', {'id': 'slow-settings-' + name, 'type': 'checkbox', 'info': name},
 				{'change': function(e){
 					setSettingsProperty(name, e.target.checked);
-				}),
+				}}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
 	}
@@ -1351,7 +1352,7 @@ function addSettings() {
 			$new('input', {'id': 'slow-settings-' + name, 'type': 'number', 'info': name, 'min': min, 'max': max},
 				{'change': function(e){
 					setSettingsProperty(name, e.target.value);
-				}),
+				}}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
 	}
@@ -1370,7 +1371,7 @@ function addSettings() {
 			$event(sel,
 				{'change': function(e){
 					setSettingsProperty(name, e.target.selectedIndex);
-				}),
+				}}),
 			$new('span', {'class': 'slow-txt-' + name}, null)
 		]);
 	}
@@ -1412,8 +1413,9 @@ function addSettings() {
 				helpstr('playPause')  + '<br>' +
 				helpstr('prevImage')  + '<br>' +
 				helpstr('nextImage')  + '<br>' +
-				helpstr('quit') + '<br>' +
-				'<a href="https://github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow" class="slow-link" target="_blank">Github</a>' +
+				helpstr('quit') + '<br><hr style="margin: 2px -10px;">' +
+				'<span class="slow-txt-version"></span> ' + version + '<br>' +
+				'<a href="https://github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow" class="slow-link" target="_blank">Github</a><br>' +
 				'</span>')
 		])
 	]);
