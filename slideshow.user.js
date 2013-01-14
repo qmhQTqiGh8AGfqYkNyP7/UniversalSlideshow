@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.1.14.1
+// @version     13.1.14.2
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -9,7 +9,7 @@
 // ==/UserScript==
 
 (function(window, undefined) {
-var version = '13.1.14.1'
+var version = '13.1.14.2'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -108,7 +108,7 @@ var PROFILES = [
 	{
 		'name': Just name, doesn't do anything.
 		'test': A function to determine on what site this profile work.
-			It moust return:
+			It must return:
 				 -1 if we're on the right site, but on wrong page, and script should not launch on it.
 				  0 if it's not site this profile designed for, shold try something else.
 				  1 if that's exactly what we are looking for, launch script.
@@ -124,7 +124,7 @@ var PROFILES = [
 					return 0;
 				}
 		'scan': A function-parser to find images on page.
-			No matter how it works, it must find images we want, and call addSlide(image, thumb, post) for each one, where:
+			No matter how it works, it must find images we want and call addSlide(image, thumb, post) for each one, where:
 				image (required) - url to full image.
 				thumb (optional) - url to small image that will be shown as thumbnail at bottom panel. If null, it will show just a number.
 				post  (optional) - image description or any other related text that will be shown at the bottom of image.
@@ -1170,7 +1170,7 @@ function startSlideshow () {
 function scanOver() {
 	$toggleDisplay($sid('load'), false);
 	if(slides.length <= 0) {
-		alert(profile.name + '\n' + LOC.str.noSlidesFound);
+		alert(profile.name + '\n' + LOC.str.noSlidesFound[settings.lang]);
 		return;
 	}
 	for (var i = 0, n = slides.length; i < n; i++) {
@@ -1288,7 +1288,7 @@ var settingsUpdater = {
 		if(S.isVisible) prepareNextImage();
 	},
 	'overlayThumbs': function() {
-		if(!settings.overlayThumbs && !S.zoomActive)
+		if(!S.zoomActive)
 			$oneTransition($sid('img-container'));
 		fitImage();
 	},
@@ -1687,6 +1687,7 @@ function addCSS() {
 	' + nav.cssFix + 'transition: none;\n\
 	vertical-align: baseline;\n\
 }\n\
+.slow select, .slow select:focus {border: default; padding: 1px; margin: 0; border-radius: 0; width: auto; height: auto; color: black; font-size: 13px;}\n\
 .slow input, .slow input:focus {\n\
 	background-color: rgba(0, 0, 0, 0);\n\
 	border: 1px solid #fff;\n\
