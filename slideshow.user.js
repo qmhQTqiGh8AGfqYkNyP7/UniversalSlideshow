@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.3.3.0
+// @version     13.3.3.1
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.3.3.0'
+var version = '13.3.3.1'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -1891,7 +1891,7 @@ function addCSS() {
 #slow-settings-content div {\n\
 	float: left;\n\
 	padding: 10px;\n\
-	width: 245px;\n\
+	width: 255px;\n\
 }\n\
 #slow h1 {\n\
 	display: table;\n\
@@ -1987,7 +1987,7 @@ function addCSS() {
 	border-bottom-right-radius: 5px;\n\
 	left: 50px;\n\
 	overflow: hidden;\n\
-	width: 265px;\n\
+	width: 275px;\n\
 }\n\
 #slow-thumbs {\n\
 	text-align: center;\n\
