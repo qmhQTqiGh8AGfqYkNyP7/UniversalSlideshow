@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.1.14.2
+// @version     13.3.3.0
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.1.14.2'
+var version = '13.3.3.0'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -35,6 +35,7 @@ var DEFAULT_SETTINGS = {
 	/*Boolean*/ 'useHistory':        true,  //
 	/*Integer*/ 'controlsHideDelay': 2,     // Delay in seconds
 	/*Integer*/ 'lang': (/ru/i.test(navigator.language) ? 0 : 1), // 0 = RU, 1 = EN
+	/*Integer*/ 'launchButtonPos':   1,     // 0 = TL, 1 = TR, 2 = BR, 3 = BL
 	/*Integer*/ 'maxHistoryLength':  100,   //
 	/*Integer*/ 'slidesChangeDelay': 5      // Delay in seconds
 };
@@ -47,6 +48,7 @@ var LOC = {
 		//'css3Animation':     ['', ''],
 		//'defaultPlay':       ['', ''],
 		//'hideLaunchButton':  ['', ''],
+		//'launchButtonPos':   ['', ''],
 		//'hideScrollbar':     ['', ''],
 		//'keepNexthistory':   ['', ''],
 		'loading':           ['Подождите...', 'Please wait...'],
@@ -80,6 +82,11 @@ var LOC = {
 			'scrollToSource':    ['Прокручивать страницу', 'Scroll page'],
 			'hideScrollbar':     ['Прятать полосу прокрутки', 'Hide scrollbar'],
 			'controlsHideDelay': ['Убирать интерфейс через', 'Controls hide delay'],
+			'launchButtonPos':   ['Кнопка запуска ', 'Launch button: '],
+				'launchButtonPos0':  ['слева вверху' , 'top left'],
+				'launchButtonPos1':  ['справа вверху', 'top right'],
+				'launchButtonPos2':  ['справа внизу' , 'bottom right'],
+				'launchButtonPos3':  ['слева внизу'  , 'bottom left'],
 			'hideLaunchButton':  ['Скрывать кнопку запуска', 'Hide launch button'],
 			'css3Animation':     ['CSS3 анимация', 'CSS3 animation'],
 		'tab3':              ['Инфо', 'Info'],
@@ -101,6 +108,8 @@ var LOC = {
 			'noGlobalOpera':         ['Глобальные настройки отключены. Установите расширение <a href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a>, чтобы сохранять настройки для всех сайтов.',                                                                                   'Global storage disabled. Please install extension <a href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a> to add global settings support.'],
 			'noGlobalSafari':        ['Глобальные настройки отключены. Установите расширение <a href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a>, чтобы сохранять настройки для всех сайтов.',                                                                                                   'Global storage disabled. Please install extension <a href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a> to add global settings support.'],
 			'noGlobalFF':            ['Глобальные настройки отключены. Установите расширение <a href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> или <a href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a>, чтобы сохранять настройки для всех сайтов.', 'Global storage disabled. Please install extension <a href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> or <a href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a> to add global settings support.'],
+		'Ru': ['Ru', 'Ru'],
+		'En': ['En', 'En'],
 		'saveGlobal':        ['Сохранить', 'Save'],
 		'loadGlobal':        ['Загрузить', 'Load'],
 		'reset':             ['Сброс', 'Reset']
@@ -878,7 +887,7 @@ function checkHistoryLength() {
 		hist.array = hist.array.slice(0, hist.index + 1);
 	}
 	if(settings.random && !settings.repeat) return;
-	if(settings.maxHistoryLength !== 0 && hist.array.length > settings.maxHistoryLength) {
+	if(settings.maxHistoryLength != 0 && hist.array.length > settings.maxHistoryLength) {
 		var delta = hist.array.length - settings.maxHistoryLength;
 		hist.array = hist.array.slice(delta);
 		hist.index = hist.index - delta;
@@ -1055,13 +1064,8 @@ function fitImage(full) {
 	    newHeight;
 	var oldWidth  = currentImg.width  + 10,
 	    oldHeight = currentImg.height + 10;
-	if($sid('img').src == ICON.DELAY || $sid('img').src == ICON.CLOSE) {
-		newWidth  = 200;
-		newHeight = 200;
-	} else if(full || (oldWidth < ww && oldHeight < wh)) {
-		newWidth  = oldWidth;
-		newHeight = oldHeight;
-	} else {
+
+	function fitToScreen() {
 		var imageAspectRatio = oldWidth / oldHeight;
 		var windowAspectRatio = ww / wh;
 		if(windowAspectRatio > imageAspectRatio) {
@@ -1072,18 +1076,41 @@ function fitImage(full) {
 			newHeight = newWidth / imageAspectRatio;
 		}
 	}
+
+	if($sid('img').src == ICON.DELAY || $sid('img').src == ICON.CLOSE) {
+		newWidth  = 200;
+		newHeight = 200;
+	} else if (oldWidth < ww && oldHeight < wh) {
+		if(full) {
+			// expand small image to screen size
+			fitToScreen();
+		} else {
+			// shrink small image to original size
+			newWidth  = oldWidth;
+			newHeight = oldHeight;
+		}
+	} else if(full) {
+		// expand large image to original size
+		newWidth  = oldWidth;
+		newHeight = oldHeight;
+	} else {
+		// fit large image to screen size
+		fitToScreen();
+	}
+	var top  = ((wh - newHeight) / 2) + 5 + 'px';
+	var left = ((ww - newWidth ) / 2) + 5 + 'px';
 	$sid('img-container').style.width  = newWidth  + 'px';
 	$sid('img-container').style.height = newHeight + 'px';
-	$sid('img-container').style.top  = ((wh - newHeight) / 2) + 5 + 'px';
-	$sid('img-container').style.left = ((ww - newWidth ) / 2) + 5 + 'px';
+	$sid('img-container').style.top  = top;
+	$sid('img-container').style.left = left;
 	checkImageBounds();
 }
 
 function checkImageBounds() {
-	imageBounds.minX = -$sid('img-container').offsetWidth  + 200;
-	imageBounds.minY = -$sid('img-container').offsetHeight + 200;
-	imageBounds.maxX = window.innerWidth  - 200;
-	imageBounds.maxY = window.innerHeight - 200;
+	imageBounds.minX = -0.8 * $sid('img-container').offsetWidth;
+	imageBounds.minY = -0.8 * $sid('img-container').offsetHeight;
+	imageBounds.maxX = window.innerWidth  -0.2 * $sid('img-container').offsetWidth;
+	imageBounds.maxY = window.innerHeight -0.2 * $sid('img-container').offsetHeight;
 	$sid('img-container').style.left = $fitInRange(parseInt($sid('img-container').style.left, 10), imageBounds.minX, imageBounds.maxX) + 'px';
 	$sid('img-container').style.top  = $fitInRange(parseInt($sid('img-container').style.top , 10), imageBounds.minY, imageBounds.maxY) + 'px';
 }
@@ -1122,7 +1149,7 @@ function checkControlsVisibility(show) {
 		fitImage();
 	}
 	clearTimeout(timers.controlsHide);
-	if(settings.controlsHideDelay !== 0 && !S.ctrlsMouseOver) {
+	if(settings.controlsHideDelay != 0 && !S.ctrlsMouseOver) {
 		timers.controlsHide = setTimeout(function(){
 			$toggleDisplay($sid('controls'), false);
 			if($isVisible($sid('thumbs-ribbon')) && !settings.overlayThumbs && !S.zoomActive) {
@@ -1255,6 +1282,10 @@ function loadSettings() {
 		if(el) el[$cfgKey(el)] = settings[key];
 		if(key in settingsUpdater) settingsUpdater[key].call();
 	}
+	if(nav.isGlobal && isEqual(settings, settings.__proto__, keepLocal)) {
+		$addClass($sid('btn-loadGlobal'), 'slow-inactive');
+		$addClass($sid('btn-saveGlobal'), 'slow-inactive');
+	}
 }
 
 function getGlobal(id) {
@@ -1282,6 +1313,14 @@ var settingsUpdater = {
 	},
 	'hideLaunchButton': function() {
 		$toggleClass($sid('menu'), 'slow-autohide', '', settings.hideLaunchButton);
+	},
+	'launchButtonPos': function() {
+		var isTop = settings.launchButtonPos == 0 || settings.launchButtonPos == 1;
+		var isLeft = settings.launchButtonPos == 0 || settings.launchButtonPos == 3;
+		$toggleClass($sid('menu'), 'slow-top', 'slow-bottom', isTop);
+		$toggleClass($sid('btn-start'), 'slow-top', 'slow-bottom', isTop);
+		$toggleClass($sid('menu'), 'slow-left', 'slow-right', isLeft);
+		$toggleClass($sid('btn-start'), 'slow-left', 'slow-right', isLeft);
 	},
 	'thumbs': function() {
 		if(!settings.overlayThumbs && !S.zoomActive)
@@ -1340,15 +1379,42 @@ var settingsUpdater = {
 function setSettingsProperty(name, value) {
 	settings[name] = value;
 	if(name in settingsUpdater) settingsUpdater[name].call();
-	// copy global settings to local
-	if(keepLocal.indexOf(name) === -1) {
-		for(key in settings.__proto__) {
-			if(!(key in settings)) {
-				settings[key] = settings.__proto__[key];
+	if(nav.isGlobal && keepLocal.indexOf(name) === -1) {
+		// check if settings now are the same as global
+		if(isEqual(settings, settings.__proto__, keepLocal)) {
+			// delete local values
+			for(key in settings) {
+				if(keepLocal.indexOf(name) === -1) {
+					delete settings[name];
+				}
 			}
+			// set save/load buttons inactive
+			$addClass($sid('btn-loadGlobal'), 'slow-inactive');
+			$addClass($sid('btn-saveGlobal'), 'slow-inactive');
+		} else {
+			// copy all global settings to local
+			for(key in settings.__proto__) {
+				if(!(key in settings)) {
+					settings[key] = settings.__proto__[key];
+				}
+			}
+			$removeClass($sid('btn-loadGlobal'), 'slow-inactive');
+			$removeClass($sid('btn-saveGlobal'), 'slow-inactive');
 		}
 	}
 	window.localStorage.setItem('SLOW_Config', JSON.stringify(settings));
+}
+
+function isEqual(obj1, obj2, ignoreKeys) {
+	for(key in obj1) {
+		if(ignoreKeys.indexOf(key) !== -1) {
+			continue;
+		}
+		if(obj2[key] !== obj1[key]) {
+			return false;
+		}
+	}
+	return true;
 }
 
 function addSettings() {
@@ -1386,15 +1452,15 @@ function addSettings() {
 	function combobox(name, options) {
 		var opts = [];
 		for(key in options) {
-			opts.push($new('option', {'value': key, 'text': options[key]}));
+			opts.push($new('option', {'value': key, 'class': 'slow-txt-' + options[key]}));
 		}
 		var sel = $New('select', {'id': 'slow-settings-' + name, 'info': name}, opts);
 		return $New('label', {'class': 'slow-ttl-' + name}, [
+			$new('span', {'class': 'slow-txt-' + name}, null),
 			$event(sel,
 				{'change': function(e){
 					setSettingsProperty(name, e.target.selectedIndex);
-				}}),
-			$new('span', {'class': 'slow-txt-' + name}, null)
+				}})
 		]);
 	}
 
@@ -1425,6 +1491,7 @@ function addSettings() {
 			checkbox('scrollToSource'),
 			checkbox('hideScrollbar'),
 			numfield('controlsHideDelay', 0, 999),
+			combobox('launchButtonPos', {'0': 'launchButtonPos0', '1': 'launchButtonPos1', '2': 'launchButtonPos2', '3': 'launchButtonPos3'}),
 			checkbox('hideLaunchButton'),
 			checkbox('css3Animation')
 		]),
@@ -1469,7 +1536,7 @@ function addSettings() {
 		$append($sid('settings-buttons'), [
 			button('loadGlobal', function() {
 				window.localStorage.setItem('SLOW_Config', '');
-				loadSettings();
+				loadSettings(); // inactive class added here
 			}),
 			button('saveGlobal', function() {
 				var global = settings.__proto__;
@@ -1479,6 +1546,8 @@ function addSettings() {
 				}
 				setGlobal('SLOW_Config', JSON.stringify(global));
 				window.localStorage.setItem('SLOW_Config', '');
+				$addClass($sid('btn-loadGlobal'), 'slow-inactive');
+				$addClass($sid('btn-saveGlobal'), 'slow-inactive');
 			})
 		]);
 	}
@@ -1704,7 +1773,7 @@ function addHTML() {
 		$add('\
 <div id="slow" class="slow">\n\
 	<div id="slow-menu">\n\
-		<a id="slow-btn-start" class="slow-btn slow-black slow-ttl-start slow-right slow-top"><div class="slow-icon slow-normal slow-icon-play"></div></a>\n\
+		<a id="slow-btn-start" class="slow-btn slow-black slow-ttl-start"><div class="slow-icon slow-normal slow-icon-play"></div></a>\n\
 	</div>\n\
 	<div id="slow-load" class="slow-black slow-ttl-loading slow-invisible">\n\
 		<img src="' + ICON.DELAY + '">\n\
@@ -1768,10 +1837,12 @@ function addCSS() {
 	' + nav.cssFix + 'transition: none;\n\
 	vertical-align: baseline;\n\
 }\n\
-#slow a:not(.slow-btn) {text-decoration: underline;}\n\
-#slow a:not(.slow-btn):hover {color: #08c;}\n\
+#slow a:not(.slow-btn) {text-decoration: underline !important;}\n\
+#slow a:not(.slow-btn):hover {color: #08c !important;}\n\
+#slow a.slow-btn, #slow a.slow-btn:hover {color: #fff !important;} /*4chan*/\n\
+#slow a.slow-btn.slow-inactive, #slow a.slow-btn.slow-inactive:hover {color: #aaa !important;}\n\
 .slow select, .slow select:focus {border-radius: 0; border: default; padding: 1px; color: black; font-size: 13px; height: auto; margin: 0; width: auto;}\n\
-.slow input ,  .slow input:focus {background-color: rgba(0, 0, 0, 0); border-radius: 3px; border: 1px solid white; margin-bottom: 10px; margin-right: 3px;}\n\
+.slow input , .slow  input:focus {background-color: rgba(0, 0, 0, 0); border-radius: 3px; border: 1px solid white; margin-bottom: 10px; margin-right: 3px;}\n\
 .slow input[type="number"] {width: 50px; height: 25px;}\n\
 .slow input[type="number"]:focus {border: 1px solid #08c;}\n\
 .slow label {display: block;}\n\
@@ -1841,9 +1912,11 @@ function addCSS() {
 #slow-menu {width: 80px; height: 80px;}\n\
 #slow-menu, #slow-load, #slow-screen {\n\
 	position: fixed;\n\
+	z-index: 999999;\n\
+}\n\
+#slow-load, #slow-screen {\n\
 	right: 0;\n\
 	top: 0;\n\
-	z-index: 999999;\n\
 }\n\
 #slow-load {\n\
 	border-radius: 5px;\n\
@@ -1946,14 +2019,19 @@ function addCSS() {
 }\n\
 #slow-thumbs img {max-height: 150px; opacity: 1 !important;}\n\
 #slow-btn-prev, #slow-btn-play,  #slow-btn-repeat   {border-top-right-radius:    5px;}\n\
-#slow-btn-next, #slow-btn-start, #slow-btn-close    {border-bottom-left-radius:  5px;}\n\
+#slow-btn-next, #slow-btn-close    {border-bottom-left-radius:  5px;}\n\
 #slow-btn-prev, #slow-btn-reset, #slow-btn-settings {border-bottom-right-radius: 5px;}\n\
 #slow-btn-next, #slow-btn-thumbs {border-top-left-radius: 5px;}\n\
-#slow .slow-top    {position: absolute; top:    0px;}\n\
-#slow .slow-bottom {position: absolute; bottom: 0px;}\n\
-#slow .slow-left   {position: absolute; left:   0px;}\n\
-#slow .slow-right  {position: absolute; right:  0px;}\n\
-#slow .slow-middle {position: absolute; top:    50%; margin-top: -17.5px;}\n\
+#slow-btn-start.slow-top.slow-left {border-bottom-right-radius: 5px;}\n\
+#slow-btn-start.slow-top.slow-right {border-bottom-left-radius: 5px;}\n\
+#slow-btn-start.slow-bottom.slow-right {border-top-left-radius: 5px;}\n\
+#slow-btn-start.slow-bottom.slow-left {border-top-right-radius: 5px;}\n\
+#slow .slow-top    {top:    0px;}\n\
+#slow .slow-bottom {bottom: 0px;}\n\
+#slow .slow-left   {left:   0px;}\n\
+#slow .slow-right  {right:  0px;}\n\
+#slow .slow-middle {top:    50%; margin-top: -17.5px;}\n\
+#slow :not(#slow-menu).slow-top, #slow :not(#slow-menu).slow-bottom, #slow :not(#slow-menu).slow-left, #slow :not(#slow-menu).slow-right, #slow :not(#slow-menu).slow-middle {position: absolute;}\n\
 #slow .slow-btn {display: block; padding: 5px;}\n\
 #slow .slow-icon {\n\
 	background-color: transparent;\n\
