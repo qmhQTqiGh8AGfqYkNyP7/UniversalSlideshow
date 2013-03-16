@@ -23,9 +23,10 @@ var settings;
 var DEFAULT_SETTINGS = {
 	/*Boolean*/ 'css3Animation':     true,  //
 	/*Boolean*/ 'defaultPlay':       false, //
+	/*Boolean*/ 'desuPostHide':    true,  // Dollchan Extension Tools feature
 	/*Boolean*/ 'hideLaunchButton':  false, //
 	/*Boolean*/ 'hideScrollbar':     true,  //
-	/*Boolean*/ 'keepNexthistory':   true,  //
+	/*Boolean*/ 'keepNextHistory':   true,  //
 	/*Boolean*/ 'overlayThumbs':     false, //
 	/*Boolean*/ 'pinPost':           false, //
 	/*Boolean*/ 'random':            false, //
@@ -43,30 +44,36 @@ var keepLocal = ['random', 'repeat', 'thumbs'];
 
 var LOC = {
 	ttl: { // slow-ttl-* title
+		'settings':          ['Настройки', 'Settings'],
+		//tab1:              ['', ''],
+			//'defaultPlay':       ['', ''],
+			'slidesChangeDelay': ['Время в секундах', 'Delay in seconds'],
+			//'useHistory':        ['', ''],
+			//'keepNextHistory':   ['', ''],
+			//'maxHistoryLength':  ['', ''],
+			//'desuPostHide':    ['', ''],
+		//tab2:              ['', ''],
+			//'overlayThumbs':     ['', ''],
+			//'pinPost':           ['', ''],
+			//'scrollToSource':    ['', ''],
+			//'hideScrollbar':     ['', ''],
+			'controlsHideDelay': ['Время в секундах, 0 = не убирать', 'Delay in seconds, 0 = never hide'],
+			//'launchButtonPos':   ['', ''],
+			//'hideLaunchButton':  ['', ''],
+			//'css3Animation':     ['', ''],
+		//tab3:              ['', ''],
+		'start':             ['Запустить слайдшоу', 'Launch slideshow'],
 		'close':             ['Закрыть', 'Close'],
-		'controlsHideDelay': ['Время в секундах, 0 = не убирать', 'Delay in seconds, 0 = never hide'],
-		//'css3Animation':     ['', ''],
-		//'defaultPlay':       ['', ''],
-		//'hideLaunchButton':  ['', ''],
-		//'launchButtonPos':   ['', ''],
-		//'hideScrollbar':     ['', ''],
-		//'keepNexthistory':   ['', ''],
 		'loading':           ['Подождите...', 'Please wait...'],
-		//'maxHistoryLength':  ['', ''],
 		'next':              ['Следующий слайд', 'Next image'],
-		//'overlayThumbs':     ['', ''],
-		//'pinPost':           ['', ''],
 		'play':              ['Воспроизведение/пауза', 'Play/pause'],
 		'prev':              ['Предыдущий слайд', 'Previous image'],
 		'random':            ['Перемещивание', 'Shuffle'],
 		'repeat':            ['Повторять всё', 'Repeat all'],
+		'saveGlobal':        ['Сохранить настройки как глобальные', 'Save settings as global'],
+		'loadGlobal':        ['Загрузить глобальные настройки', 'Load global settings'],
 		'reset':             ['Сбросить на настройки по умолчанию', 'Reset settings to defaults'],
-		//'scrollToSource':    ['', ''],
-		'settings':          ['Настройки', 'Settings'],
-		'slidesChangeDelay': ['Время в секундах', 'Delay in seconds'],
-		'start':             ['Запустить слайдшоу', 'Launch slideshow'],
-		'thumbs':            ['Показать ленту', 'Show thumbnails']//,
-		//'useHistory':        ['', '']
+		'thumbs':            ['Показать ленту', 'Show thumbnails']
 	},
 	txt: { // slow-txt-* text content
 		'settings':          ['НАСТРОЙКИ', 'SETTINGS'],
@@ -74,8 +81,9 @@ var LOC = {
 			'defaultPlay':       ['Воспроизводить при запуске', 'Play on start'],
 			'slidesChangeDelay': ['Интервал смены слайдов', 'Slides change delay'],
 			'useHistory':        ['Использовать историю', 'Use history'],
-			'keepNexthistory':   ['Переход вперед по истории', 'Keep next history'],
+			'keepNextHistory':   ['Переход вперед по истории', 'Keep next history'],
 			'maxHistoryLength':  ['Макс. размер истории', 'Max history length'],
+			'desuPostHide':    ['[Куклоскрипт] Не показывать скрытое', '[Dollchan Extension Tools] Do not show hidden images'],
 		'tab2':              ['Общее', 'Common'],
 			'overlayThumbs':     ['Лента поверх изображения', 'Overlay thumbs'],
 			'pinPost':           ['Не скрывать сообщение', 'Pin post'],
@@ -90,24 +98,24 @@ var LOC = {
 			'hideLaunchButton':  ['Скрывать кнопку запуска', 'Hide launch button'],
 			'css3Animation':     ['CSS3 анимация', 'CSS3 animation'],
 		'tab3':              ['Инфо', 'Info'],
-			    'nextImage':     ['След. слайд', 'Next image'],
-			'key-nextImage':     ['X, →, ↑', 'X, →, ↑'],
+			    'nextSlide':     ['След. слайд', 'Next image'],
+			'key-nextSlide':     ['X, →, ↑', 'X, →, ↑', 'X, →, ↑'],
 			    'playPause':     ['Воспроизведение/пауза', 'Play/pause'],
 			'key-playPause':     ['Пробел', 'Space bar'],
-			    'prevImage':     ['Пред. слайд', 'Prev image'],
-			'key-prevImage':     ['Z, ←, ↓', 'Z, ←, ↓'],
+			    'prevSlide':     ['Пред. слайд', 'Prev image'],
+			'key-prevSlide':     ['Z, ←, ↓', 'Z, ←, ↓', 'Z, ←, ↓'],
 			    'quit':          ['Выход', 'Quit'],
-			'key-quit':          ['Q, Escape', 'Q, Escape'],
+			'key-quit':          ['Q, Escape', 'Q, Escape', 'Q, Escape'],
 			    'toggleZoom':    ['Режим увеличения', 'Toggle zoom'],
 			'key-toggleZoom':    ['Двойной клик по слайду', 'Double click on image'],
 			    'zoomInOut':     ['Увеличить/уменьшить', 'Zoom in/out'],
 			'key-zoomInOut':         ['Колесико мыши', 'Mouse wheel'],
 			'version':           ['Версия:', 'Version:'],
 			'noGlobal':              ['Глобальные настройки отключены.', 'Global storage diabled.'],
-			'noGlobalChrome':        ['Глобальные настройки отключены. Установите расширение <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a>, чтобы сохранять настройки для всех сайтов.',                                                            'Global storage disabled. Please install extension <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> to add global settings support.'],
-			'noGlobalOpera':         ['Глобальные настройки отключены. Установите расширение <a href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a>, чтобы сохранять настройки для всех сайтов.',                                                                                   'Global storage disabled. Please install extension <a href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a> to add global settings support.'],
-			'noGlobalSafari':        ['Глобальные настройки отключены. Установите расширение <a href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a>, чтобы сохранять настройки для всех сайтов.',                                                                                                   'Global storage disabled. Please install extension <a href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a> to add global settings support.'],
-			'noGlobalFF':            ['Глобальные настройки отключены. Установите расширение <a href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> или <a href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a>, чтобы сохранять настройки для всех сайтов.', 'Global storage disabled. Please install extension <a href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> or <a href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a> to add global settings support.'],
+			'noGlobalChrome':        ['Глобальные настройки отключены. Установите расширение <a target="blank" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a>, чтобы сохранять настройки для всех сайтов.',                                                            'Global storage disabled. Please install extension <a target="blank" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> to add global settings support.'],
+			'noGlobalOpera':         ['Глобальные настройки отключены. Установите расширение <a target="blank" href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a>, чтобы сохранять настройки для всех сайтов.',                                                                                   'Global storage disabled. Please install extension <a target="blank" href="https://addons.opera.com/ru/extensions/details/violent-monkey/">Violent monkey</a> to add global settings support.'],
+			'noGlobalSafari':        ['Глобальные настройки отключены. Установите расширение <a target="blank" href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a>, чтобы сохранять настройки для всех сайтов.',                                                                                                   'Global storage disabled. Please install extension <a target="blank" href="http://ss-o.net/safari/extension/NinjaKit.safariextz">NinjaKit</a> to add global settings support.'],
+			'noGlobalFF':            ['Глобальные настройки отключены. Установите расширение <a target="blank" href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> или <a target="blank" href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a>, чтобы сохранять настройки для всех сайтов.', 'Global storage disabled. Please install extension <a target="blank" href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/">Greasemonkey</a> or <a target="blank" href="https://addons.mozilla.org/en-US/firefox/addon/scriptish/">Scriptish</a> to add global settings support.'],
 		'Ru': ['Ru', 'Ru'],
 		'En': ['En', 'En'],
 		'saveGlobal':        ['Сохранить', 'Save'],
@@ -291,14 +299,26 @@ var PROFILES = [
 				aib.brit ? 'threadlinktext' :
 				'filesize';
 			this.aib = aib;
+			this.desu = !!$id('de-main'); // Dollchan extension
 			return 1;
 		},
 		'scan': function() {
+			function isHidden(elem) {
+				for(var currentParent = val.parentNode; currentParent.tagName != 'BODY'; currentParent = currentParent.parentNode) {
+					if($hasClass(currentParent, 'de-post-hid') || currentParent.style.display == 'none') {
+						return true;
+					}
+				}
+				return false;
+			}
 			var temp = $Q(qImgLink, doc);
 			for(var i = 0, n = temp.length; i < n; i++) {
 				var val = temp[i];
 				var image = val.href;
 				var t = null, thumb = null, p = null, post = null;
+				// Dollchan: post is hidden
+				if(this.desu && settings.desuPostHide && isHidden(val))
+					continue;
 				if($hasClass(val.parentNode, this.aib.cFileInfo)) {
 					continue;
 				}
@@ -309,7 +329,7 @@ var PROFILES = [
 						p = $q('blockquote', val.parentNode.parentNode);
 					} else {
 						p = val.nextElementSibling;
-						while(p && p.tagName.toLowerCase() != 'blockquote') {
+						while(p && p.tagName != 'BLOCKQUOTE') {
 							p = p.nextElementSibling;
 						}
 					}
@@ -352,15 +372,12 @@ var timers = {
 
 //state vars
 var S = {
-	isPlaying      : false,
-	zoomActive     : false,
-	imageMouseOver : false,
-	ctrlsMouseOver : false
+	settingsPanel  : false, // is settings panel initialized
+	isPlaying      : false, // is slideshow playing
+	zoomActive     : false, // is image in zoom mode
+	imageMouseOver : false, // is mouse cursor over image
+	ctrlsMouseOver : false  // is mouse cursor over controls
 };
-
-//slideshow vars
-var slides = []; // Array of Objects {url image, url thumb, string post}
-var hist = new SlideshowHistory();
 
 var qImgLink = 'a[href$=".jpg"], a[href$=".jpeg"], a[href$=".png"], a[href$=".gif"], a[href$=".svg"]';
 
@@ -368,15 +385,75 @@ var qImgLink = 'a[href$=".jpg"], a[href$=".jpeg"], a[href$=".png"], a[href$=".gi
  * @constructor 
  */
 function SlideshowHistory() {
-	this.index = 0;
-	this.array = [];
+	this.clear();
 }
-
-SlideshowHistory.prototype.getCurrent = function() {
-	return settings.useHistory ? this.array[this.index] : this.index;
+SlideshowHistory.prototype = {
+	getCurrent: function() {
+		return this.array[this.index];
+	},
+	getPrev: function() {
+		var i = this.index - 1;
+		return $inRange(i, 0, this.array.length) ? this.array[i] : null;
+	},
+	getNext: function() {
+		var i = this.index + 1;
+		return $inRange(i, 0, this.array.length) ? this.array[i] : null;
+	},
+	trimHead: function(length) {
+		if(this.array.length <= length) return;
+		var begining = this.array.length - length;
+		this.array.splice(0, begining);
+		this.index -= begining;
+	},
+	trimTail: function(length) {
+		if(this.array.length <= length) return;
+		this.array.splice(length);
+	},
+	push: function(item) {
+		if(item == this.getCurrent() || !item) {
+			return;
+		} else if(item === this.getNext()) {
+			this.index++;
+		} else if(item === this.getPrev()) {
+			this.index--;
+		} else {
+			this.index++;
+			this.trimTail(this.index);
+			this.array.push(item);
+		}
+	},
+	clear: function() {
+		this.index = -1;
+		this.array = [];
+	}
 };
 
-var ICON;
+/*
+ * @constructor 
+ */
+function Slide(image, thumb, post, elem) {
+	this.image = image;
+	this.thumb = thumb;
+	this.post  = post;
+	this.elem  = elem;
+}
+
+Slide.prototype = {
+	image:  '',
+	thumb:  '',
+	post:   '',
+	elem:   null,
+	width:  0,
+	height: 0,
+	loaded: false
+};
+
+//slideshow vars
+var HISTORY, // SlideshowHistory
+    SLIDES,  // Array of Slide objects
+    ICON,    // Object
+    currentSlide,
+       nextSlide;
 
 //elements
 var preloadImg, // Invisible preloader
@@ -398,7 +475,7 @@ function $id(id) {
 	return $cache[id] ? $cache[id] : $cache[id] = doc.getElementById(id);
 }
 function $sid(id) {
-	return $id(id ? 'slow-' + id : 'slow');
+	return $id('slow-' + id);
 }
 
 function $Q(path, root) {
@@ -601,19 +678,38 @@ function $getUrl(url, callback) {
 
 // MISC UTILITES
 
-function $rand(a, b) {
+function $randInt(a, b) {
 	return Math.floor(a + (Math.random() * (b - a)));
 }
 
+function $randFromArr(arr) {
+	return arr[$randInt(0, arr.length)];
+}
+
 function $inRange(val, min, max) {
+	if(min > max)
+		throw 'Invalid range: min=' + min + '; max=' + max;
 	if(val < min) return false;
 	if(val > max) return false;
 	return true;
 }
 
-function $fitInRange(val, min, max) {
-	if(val < min) return min;
-	if(val > max) return max;
+function $fitInRange(val, min, max, loop) {
+	if(min > max)
+		throw 'Invalid range: min=' + min + '; max=' + max;
+	if(val < min) {
+		if(loop) {
+			return max - ((min - val) % (max - min)) + 1;
+		} else {
+			return min;
+		}
+	} else if(val > max) {
+		if(loop) {
+			return min + ((val - max) % (max - min)) - 1;
+		} else {
+			return max;
+		}
+	}
 	return val;
 }
 
@@ -624,8 +720,8 @@ function $isValidNumber(val, error) {
 }
 
 function $cfgKey(el) {
-	var tag = el.tagName.toLowerCase();
-	var key = tag == 'select' ? 'selectedIndex' :
+	var tag = el.tagName;
+	var key = tag == 'SELECT' ? 'selectedIndex' :
 		el.type == 'checkbox' ? 'checked' : 'value';
 	return key;
 }
@@ -654,7 +750,22 @@ function $forceRedraw(el) {
 
 // ARRAY UTILITES
 
-$indexOfObjectWithValue = function(arr, key, value) {
+function $subtract(arr1, arr2) {
+	var newArr = [];
+	for(var i = 0, n = arr1.length; i < n; i++) {
+		var val = arr1[i];
+		if(!$contains(arr2, val)) {
+			newArr.push(val);
+		}
+	}
+	return newArr;
+}
+
+function $contains(arr, val) {
+	return arr.indexOf(val) !== -1;
+}
+
+function $indexOfObjectWithValue(arr, key, value) {
 	for (var i = 0, n = arr.length; i < n; i++) {
 		var regexp = new RegExp(arr[i][key] + '$', 'i');
 		if (arr[i] && value.match(regexp)) {
@@ -662,20 +773,7 @@ $indexOfObjectWithValue = function(arr, key, value) {
 		}
 	}
 	return -1;
-};
-
-$containsObjectWithValue = function(arr, key, value) {
-	return $indexOfObjectWithValue(arr, key, value) !== -1;
-};
-
-$getObjectWithValue = function(arr, key, value) {
-	var i = $indexOfObjectWithValue(arr, key, value)
-	return i !== -1 ? arr[i] : null;
-};
-
-$difference = function(arr1, arr2) {
-    return arr1.filter(function(i) {return !(arr2.indexOf(i) > -1);});
-};
+}
 
 /*==============================================================================
                                     Tweener class
@@ -764,133 +862,75 @@ Tweener.prototype = {
 };
 
 /*==============================================================================
-                                    Slideshow
+                                    Playback
 ==============================================================================*/
 
-function prepareNextImage() {
-	if(hist.array.length <= 0) {
-		hist.array[0] = settings.random ? Math.floor(Math.random() * slides.length) : 0;
-	}
-	var index;
-	if(settings.useHistory && hist.index < hist.array.length - 1) {
-		index = hist.array[hist.index + 1];
-	} else if(settings.random) {
-		if(settings.repeat) {
-			var current = index = hist.getCurrent();
-			while(index == current) index = $rand(0, slides.length);
-		} else {
-			if(settings.useHistory) {
-				var unique = [];
-				for (var i = 0, n = slides.length; i < n; i++) {
-					if(hist.array.indexOf(i) == -1) unique.push(i);
-				}
-				if(unique.length !== 0) index = unique[$rand(0, unique.length)];
-				else togglePause(true);
-			} else {
-				index = $rand(hist.index + 1, slides.length);
-			}
-		}
+function getNextSlide() {
+	var histnext = HISTORY.getNext();
+	if(histnext) return histnext;
+	if(settings.random) {
+		var exclude = settings.repeat ? [currentSlide] : HISTORY.array;
+		var chooses = $subtract(SLIDES, exclude);
+		return $randFromArr(chooses);
 	} else {
-		index = hist.getCurrent() + 1;
-		if(index >= slides.length) {
-			if(settings.repeat) index = 0;
-			else index--;
-		}
+		var i = SLIDES.indexOf(currentSlide);
+		i = $fitInRange(i + 1, 0, SLIDES.length - 1, settings.repeat);
+		return SLIDES[i];
 	}
-	if(index == undefined) index = hist.getCurrent();
-	preloadImg.src = slides[index].image;
 }
 
-function updateImage() {
+function getPrevSlide() {
+	var histprev = HISTORY.getPrev();
+	if(histprev) return histprev;
+	if(!settings.random) {
+		i = SLIDES.indexOf(currentSlide);
+		i = $fitInRange(i - 1, 0, SLIDES.length - 1, settings.repeat);
+		return SLIDES[i];
+	}
+}
+
+function showSlide(slide) {
+	if(!slide || currentSlide === slide) return;
+	HISTORY.push(slide);
 	checkHistoryLength();
-	prepareNextImage();
-	var currentIndex = hist.getCurrent();
+
+	currentSlide = slide;
+	   nextSlide = getNextSlide();
+
+	currentImg.src = currentSlide.image;
+	preloadImg.src = nextSlide ? nextSlide.image : '';
+
 	//Remove last thumb highlight
 	var thumb = $q('.slow-thumb-current', $sid('thumbs'));
 	if(thumb) $removeClass(thumb, 'slow-thumb-current');
 	//Add highlight to current thumb and scroll to
-	thumb = $sid('thumbs').childNodes[currentIndex];
-	$addClass(thumb, 'slow-thumb-current');
-	//Center thumbs scroll
-	thumbScroller.tweenTo(thumb.offsetLeft - (($sid('thumbs-ribbon').offsetWidth - thumb.offsetWidth) / 2), 500);
+	thumb = $sid('thumbs').childNodes[SLIDES.indexOf(currentSlide)];
+	if(thumb) {
+		$addClass(thumb, 'slow-thumb-current');
+		//Center thumbs scroll
+		thumbScroller.tweenTo(thumb.offsetLeft - (($sid('thumbs-ribbon').offsetWidth - thumb.offsetWidth) / 2), 500);
+	}
 
-	var currentSlide = slides[currentIndex];
-	currentImg.src = currentSlide.image;
-	if(currentSlide.isLoaded) {
+	if(currentSlide.loaded) {
 		$sid('img').src = currentSlide.image;
 	} else {
 		$sid('img').src = ICON.DELAY;
 	}
-	$sid('btn-thumbs').innerHTML = (currentIndex + 1) + '/' + slides.length;
+	$sid('btn-thumbs').innerHTML = (SLIDES.indexOf(currentSlide) + 1) + '/' + SLIDES.length;
 	$sid('post').innerHTML = currentSlide.post;
+
 	checkPostVisibility(/* */); // No args or undefined
 	toggleZoom(false);
 	$forceRedraw($sid('img-container'));
-	if(settings.scrollToSource && currentSlide.element) currentSlide.element.scrollIntoView();
-}
-
-/*==============================================================================
-                                    Playback
-==============================================================================*/
-
-// BUGS, BUGS EVERYWHERE!
-
-function nextImage() {
-	if(preloadImg.src == currentImg.src) return;
-	if(settings.useHistory) {
-		if(hist.index < hist.array.length - 1) {
-			hist.index++
-		} else {
-			hist.array.push($indexOfObjectWithValue(slides, 'image', preloadImg.src));
-			hist.index = hist.array.length - 1;
-		}
-	} else {
-		hist.index = $indexOfObjectWithValue(slides, 'image', preloadImg.src);
-	}
-	updateImage();
-}
-
-function prevImage() {
-	hist.index--;
-	if(hist.index < 0) {
-		if(settings.repeat) {
-			if(settings.useHistory) {
-				// WTF should be here?
-				hist.index = 0;
-			} else {
-				hist.index = slides.length - 1;
-			}
-		} else {
-			hist.index = 0;
-		}
-	}
-	updateImage();
-}
-
-function jumpTo(position) {
-	if(!position && position !== 0) return;
-	if(position < 0 || position >= slides.length) return;
-	if(settings.useHistory) {
-		if(position == hist.array[hist.index]) return;
-		hist.index = Math.min(hist.index + 1, hist.array.length);
-		hist.array.splice(hist.index);
-		hist.array[hist.index] = position;
-	} else {
-		if(position == hist.index) return;
-		hist.index = position;
-	}
-	updateImage();
+	if(settings.scrollToSource && currentSlide.elem) currentSlide.elem.scrollIntoView();
 }
 
 function checkHistoryLength() {
-	if(!settings.keepNexthistory) {
-		hist.array = hist.array.slice(0, hist.index + 1);
+	if(!settings.keepNextHistory) {
+		HISTORY.trimTail(HISTORY.index + 1);
 	}
-	if(settings.random && !settings.repeat) return;
-	if(settings.maxHistoryLength != 0 && hist.array.length > settings.maxHistoryLength) {
-		var delta = hist.array.length - settings.maxHistoryLength;
-		hist.array = hist.array.slice(delta);
-		hist.index = hist.index - delta;
+	if((!settings.random || settings.repeat) && settings.maxHistoryLength != 0) {
+		HISTORY.trimHead(settings.maxHistoryLength);
 	}
 }
 
@@ -1062,8 +1102,8 @@ function fitImage(full) {
 	    wh = (thumbsVisible ? window.innerHeight - $sid('thumbs-ribbon').offsetHeight : window.innerHeight) - 20;
 	var newWidth,
 	    newHeight;
-	var oldWidth  = currentImg.width  + 10,
-	    oldHeight = currentImg.height + 10;
+	var oldWidth  = currentSlide.width  + 10,
+	    oldHeight = currentSlide.height + 10;
 
 	function fitToScreen() {
 		var imageAspectRatio = oldWidth / oldHeight;
@@ -1131,7 +1171,14 @@ function togglePause(isOn) {
 
 function checkSlideChangeTimer() {
 	clearTimeout(timers.slidesChange);
-	if(S.isPlaying) timers.slidesChange = setTimeout(nextImage, settings.slidesChangeDelay * 1000);
+	if(S.isPlaying) {
+		timers.slidesChange = setTimeout(function() {
+			showSlide(nextSlide);
+			if(nextSlide === currentSlide || !nextSlide) {
+				togglePause(true);
+			}
+		}, settings.slidesChangeDelay * 1000);
+	}
 }
 
 /*==============================================================================
@@ -1172,6 +1219,10 @@ function checkPostVisibility(show) {
                                     Launch
 ==============================================================================*/
 
+function rescan() {
+	// TODO
+}
+
 function startSlideshow() {
 	clearThumbs();
 	$toggleDisplay($sid('load'), true);
@@ -1180,14 +1231,13 @@ function startSlideshow() {
 
 function scanOver() {
 	$toggleDisplay($sid('load'), false);
-	if(slides.length <= 0) {
+	if(SLIDES.length <= 0) {
 		alert(profile.name + '\n' + LOC.str.noSlidesFound[settings.lang]);
 		return;
 	}
-	for (var i = 0, n = slides.length; i < n; i++) {
-		addThumb(slides[i].thumb, i);
+	for (var i = 0, n = SLIDES.length; i < n; i++) {
+		addThumb(SLIDES[i], i);
 	}
-	prepareNextImage();
 
 	if(settings.defaultPlay || S.isPlaying) {
 		S.isPlaying = true;
@@ -1200,7 +1250,15 @@ function scanOver() {
 	$toggleDisplay($sid('screen'), true);
 	if(settings.hideScrollbar) doc.body.style.overflow = 'hidden';
 
-	updateImage();
+	if(!currentSlide) {
+		if(settings.random) {
+			var exclude = settings.repeat ? [currentSlide] : HISTORY.array;
+			var chooses = $subtract(SLIDES, exclude);
+			showSlide($randFromArr(chooses));
+		} else {
+			showSlide(SLIDES[0]);
+		}
+	}
 
 	$event($sid('screen'),   EventHandlers.screenMove  );
 	$event($sid('controls'), EventHandlers.ctrlsOverOut);
@@ -1219,22 +1277,22 @@ function stopSlideshow() {
 	$event(window, EventHandlers.windowResize);
 }
 
-function addSlide(image, thumb, post, element) {
+function addSlide(image, thumb, post, elem) {
 	if(!image) return;
-	var dupeIndex = $indexOfObjectWithValue(slides, 'image', image);
+	var dupeIndex = $indexOfObjectWithValue(SLIDES, 'image', image);
 	if(dupeIndex !== -1) {
-		if(!slides[dupeIndex].thumb && thumb) slides[dupeIndex].thumb = thumb;
-		if(!slides[dupeIndex].post  && post ) slides[dupeIndex].post  = post;
+		if(!SLIDES[dupeIndex].thumb && thumb) SLIDES[dupeIndex].thumb = thumb;
+		if(!SLIDES[dupeIndex].post  && post ) SLIDES[dupeIndex].post  = post;
 	} else {
-		slides.push({'image': image, 'thumb': thumb, 'post': post, 'element': element});
+		SLIDES.push(new Slide(image, thumb, post, elem));
 	}
 }
 
-function addThumb(src, n) {
-	// "<a class='slow-thumb' unselectable='on'><img src='" + src + "'></a>";
+function addThumb(slide, n) {
+	// "<a class='slow-thumb' unselectable='on'><img src='" + slide.thumb + "'></a>";
 	// "<a class='slow-thumb' unselectable='on'><div text='" + (n + 1) + "'></a>";
-	var thumb = $New('a', {'class': 'slow-thumb', 'unselectable': 'on', 'value': n}, [
-		src ? $new('img', {'src': src, 'class': 'slow-thumb-img'}) :
+	var thumb = $New('a', {'class': 'slow-thumb', 'unselectable': 'on', 'value': slide}, [
+		slide.thumb ? $new('img', {'src': slide.thumb, 'class': 'slow-thumb-img'}) :
 		$New('div', {'class': 'slow-thumb-number', 'unselectable': 'on'}, [
 			$new('span', {'text': (n + 1)})
 		])
@@ -1278,8 +1336,10 @@ function loadSettings() {
 	globalSettings.__proto__ = DEFAULT_SETTINGS;
 	// update properties
 	for(key in settings) {
-		var el = $sid('settings-' + key);
-		if(el) el[$cfgKey(el)] = settings[key];
+		if(S.settingsPanel) {
+			var el = $sid('settings-' + key);
+			if(el) el[$cfgKey(el)] = settings[key];
+		}
 		if(key in settingsUpdater) settingsUpdater[key].call();
 	}
 	if(nav.isGlobal && isEqual(settings, settings.__proto__, keepLocal)) {
@@ -1303,7 +1363,7 @@ function setGlobal(id, value) {
 
 var settingsUpdater = {
 	'css3Animation': function() {
-		$toggleClass($sid(), 'slow-anim', '', settings.css3Animation);
+		$toggleClass($sid('slow'), 'slow-anim', '', settings.css3Animation);
 	},
 	'hideScrollbar': function() {
 		if(settings.hideScrollbar && $isVisible($sid('screen')))
@@ -1322,6 +1382,7 @@ var settingsUpdater = {
 		$toggleClass($sid('menu'), 'slow-left', 'slow-right', isLeft);
 		$toggleClass($sid('btn-start'), 'slow-left', 'slow-right', isLeft);
 	},
+	'desuPostHide': function() {rescan();},
 	'thumbs': function() {
 		if(!settings.overlayThumbs && !S.zoomActive)
 			$oneTransition($sid('img-container'));
@@ -1330,11 +1391,11 @@ var settingsUpdater = {
 	},
 	'random': function() {
 		$toggleClass($sid('btn-random').childNodes[0], 'slow-icon-random-a', 'slow-icon-random', settings.random);
-		if($isVisible($sid('screen'))) prepareNextImage();
+		if(SLIDES.length) nextSlide = getNextSlide();
 	},
 	'repeat': function() {
 		$toggleClass($sid('btn-repeat').childNodes[0], 'slow-icon-repeat-a', 'slow-icon-repeat', settings.repeat);
-		if($isVisible($sid('screen'))) prepareNextImage();
+		if(SLIDES.length) nextSlide = getNextSlide();
 	},
 	'overlayThumbs': function() {
 		if(!S.zoomActive)
@@ -1350,7 +1411,6 @@ var settingsUpdater = {
 		checkPostVisibility(settings.pinPost);
 	},
 	'scrollToSource': function() {
-		var currentSlide = slides[hist.getCurrent()];
 		if(settings.scrollToSource && currentSlide && currentSlide.element && $isVisible($sid('screen')))
 			currentSlide.element.scrollIntoView();
 	},
@@ -1362,13 +1422,13 @@ var settingsUpdater = {
 	},
 	'lang': function() {
 		for(x in LOC.ttl) {
-			var elements = $Q('.slow-ttl-' + x, $sid());
+			var elements = $Q('.slow-ttl-' + x, $sid('slow'));
 			for(var i = 0, n = elements.length; i < n; i++) {
 				elements[i].title = LOC.ttl[x][settings.lang];
 			}
 		}
 		for(x in LOC.txt) {
-			var elements = $Q('.slow-txt-' + x, $sid());
+			var elements = $Q('.slow-txt-' + x, $sid('slow'));
 			for(var i = 0, n = elements.length; i < n; i++) {
 				elements[i].innerHTML = LOC.txt[x][settings.lang];
 			}
@@ -1482,8 +1542,11 @@ function addSettings() {
 			checkbox('defaultPlay'),
 			numfield('slidesChangeDelay', 0.5, 999),
 			checkbox('useHistory'),
-			checkbox('keepNexthistory'),
-			numfield('maxHistoryLength', 0, 999)
+			checkbox('keepNextHistory'),
+			numfield('maxHistoryLength', 0, 999),
+			$if(profile.desu,
+				checkbox('desuPostHide')
+			)
 		]),
 		$New('div', {'id': 'slow-settings-tab2'}, [
 			checkbox('overlayThumbs'),
@@ -1500,8 +1563,8 @@ function addSettings() {
 				helpstr('toggleZoom') +
 				helpstr('zoomInOut') +
 				helpstr('playPause') +
-				helpstr('prevImage') +
-				helpstr('nextImage') +
+				helpstr('prevSlide') +
+				helpstr('nextSlide') +
 				helpstr('quit') +
 				'<hr style="margin: 2px -10px;">' +
 				'<span class="slow-txt-version"></span> ' + version + '<br>' +
@@ -1551,6 +1614,16 @@ function addSettings() {
 			})
 		]);
 	}
+
+	// update inputs
+	for(key in settings) {
+		var el = $sid('settings-' + key);
+		if(el) el[$cfgKey(el)] = settings[key];
+	}
+	// update strings
+	settingsUpdater.lang();
+
+	S.settingsPanel = true;
 }
 
 /*==============================================================================
@@ -1559,13 +1632,12 @@ function addSettings() {
 
 function addElements() {
 	preloadImg = $new('img'); // Invisible preloader
-	currentImg = $new('img', null, {'load': function() {
-		$sid('img').src = currentImg.src;
-		var slide = $getObjectWithValue(slides, 'image', currentImg.src);
-		if(slide) {
-			slide.isLoaded = true;
-			slide.width = currentImg.width;
-			slide.height = currentImg.height;
+	currentImg = $new('img', null, {'load': function(event) {
+		$sid('img').src = event.target.src;
+		if(currentSlide) {
+			currentSlide.loaded = true;
+			currentSlide.width = event.target.width;
+			currentSlide.height = event.target.height;
 		}
 		checkSlideChangeTimer();
 		fitImage();
@@ -1650,32 +1722,35 @@ var EventHandlers = {
 	screenMove  : {'mousemove': function(){checkControlsVisibility(/* */);}}, // No arguments or undefined
 	imageClick  : {'dblclick' : function(){$oneTransition($sid('img-container'), checkImageBounds); toggleZoom(/* */);}, 'mousedown': $pd}, // No arguments or undefined
 
-	nextImage      : {'click': function(){nextImage();}},
-	prevImage      : {'click': function(){prevImage();}},
+	nextSlide      : {'click': function(){showSlide(nextSlide);}},
+	prevSlide      : {'click': function(){showSlide(getPrevSlide());}},
 	togglePause    : {'click': function(){togglePause(/* */);}}, // No arguments or undefined
 	toggleRandom   : {'click': function(){setSettingsProperty('random', !settings.random);}},
 	toggleRepeat   : {'click': function(){setSettingsProperty('repeat', !settings.repeat);}},
 	toggleThumbs   : {'click': function(){setSettingsProperty('thumbs', !settings.thumbs);}},
 	toggleSlideshow: {'click': function(){toggleSlideshow();}},
-	toggleSettings : {'click': function(){$toggleDisplay($sid('settings'));}},
+	toggleSettings : {'click': function(){
+		if(!S.settingsPanel) addSettings();
+		$toggleDisplay($sid('settings'));
+	}},
 
 	windowResize: {'resize': function(){fitImage(/* */);}}, // No arguments or undefined
 	shortcuts: {
 	'keydown': function(event) {
 		if(event.keyCode == 32 /*space*/) togglePause(/* */); // No arguments or undefined
 		else if(event.keyCode == 81 /*q*/ || event.keyCode == 27 /* esc */) toggleSlideshow();
-		else if(event.keyCode == 88 /*x*/ || event.keyCode == 39 /*right*/ || event.keyCode == 40 /*down*/) nextImage();
-		else if(event.keyCode == 90 /*z*/ || event.keyCode == 37 /*left */ || event.keyCode == 38 /* up */) prevImage();
+		else if(event.keyCode == 88 /*x*/ || event.keyCode == 39 /*right*/ || event.keyCode == 40 /*down*/) showSlide(nextSlide);
+		else if(event.keyCode == 90 /*z*/ || event.keyCode == 37 /*left */ || event.keyCode == 38 /* up */) showSlide(getPrevSlide());
 		else return;
 		$pd(event);
 	}},
 
-	thumbClick: {'fixedClick': function(event){jumpTo(event.currentTarget.value);}, 'mousedown': $pd}
+	thumbClick: {'fixedClick': function(event){showSlide(event.currentTarget.value);}, 'mousedown': $pd}
 };
 
 function addListeners() {
-	$event($sid('btn-next'),     EventHandlers.nextImage      );
-	$event($sid('btn-prev'),     EventHandlers.prevImage      );
+	$event($sid('btn-next'),     EventHandlers.nextSlide      );
+	$event($sid('btn-prev'),     EventHandlers.prevSlide      );
 	$event($sid('btn-play'),     EventHandlers.togglePause    );
 	$event($sid('btn-random'),   EventHandlers.toggleRandom   );
 	$event($sid('btn-repeat'),   EventHandlers.toggleRepeat   );
@@ -1732,35 +1807,28 @@ function doScript() {
 	}
 	nav.scrollEvent = nav.Firefox ? 'DOMMouseScroll' : 'mousewheel';
 
-	// SVG icons from Iconic icon set http://somerandomdude.com/work/iconic/
-	// Icons encoded in base64 because Opera have bug with raw svg in url()
-	ICON = {};
-	var pre, x1, x2, x3;
-	pre  = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nM';
-	x1 = 'zInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBkPSdNM';
-	ICON.DELAY    = pre + x1 + 'TYsNGM2LjYxNywwLDEyLDUuMzgzLDEyLDEycy01LjM4MywxMi0xMiwxMlM0LDIyLjYxNyw0LDE2UzkuMzgzLDQsMTYsNE0xNiwwQzcuMTY0LDAsMCw3LjE2NCwwLDE2czcuMTY0LDE2LDE2LDE2czE2LTcuMTY0LDE2LTE2UzI0LjgzNiwwLDE2LDBMMTYsMHonLz48cGF0aCBzdHlsZT0nZmlsbDojY2NjY2NjOycgZD0nTTIxLjQyMiwxOC41NzhMMTgsMTUuMTUyVjhoLTQuMDIzdjcuOTkyYzAsMC42MDIsMC4yNzcsMS4xMjEsMC42OTUsMS40OTJsMy45MjIsMy45MjJMMjEuNDIyLDE4LjU3OHonLz48L2c+PC9zdmc+';
-	ICON.NEXT     = pre + x1 + 'TYuMDE2LDBsLTUuNjY4LDUuNjcyYzAsMCwzLjE4LDMuMTgsNi4zMTIsNi4zMTJIMHY4LjAyN2gxNi42NmwtNi4zMTYsNi4zMTZMMTYuMDE2LDMyTDMyLDE2TDE2LjAxNiwweicvPjwvZz48L3N2Zz4=';
-	ICON.PREV     = pre + x1 + 'TUuOTg0LDMybDUuNjcyLTUuNjcyYzAsMC0zLjE4LTMuMTgtNi4zMTItNi4zMTJIMzJ2LTguMDIzSDE1LjM0NGw2LjMxMi02LjMyTDE1Ljk4NCwwTDAsMTZMMTUuOTg0LDMyeicvPjwvZz48L3N2Zz4=';
-	ICON.SETTINGS = pre + x1 + 'zIsMTcuOTY5di00bC00Ljc4MS0xLjk5MmMtMC4xMzMtMC4zNzUtMC4yNzMtMC43MzgtMC40NDUtMS4wOTRsMS45My00LjgwNUwyNS44NzUsMy4yNWwtNC43NjIsMS45NjFjLTAuMzYzLTAuMTc2LTAuNzM0LTAuMzI0LTEuMTE3LTAuNDYxTDE3Ljk2OSwwaC00bC0xLjk3Nyw0LjczNGMtMC4zOTgsMC4xNDEtMC43ODEsMC4yODktMS4xNiwwLjQ2OWwtNC43NTQtMS45MUwzLjI1LDYuMTIxbDEuOTM4LDQuNzExQzUsMTEuMjE5LDQuODQ4LDExLjYxMyw0LjcwMywxMi4wMkwwLDE0LjAzMXY0bDQuNzA3LDEuOTYxYzAuMTQ1LDAuNDA2LDAuMzAxLDAuODAxLDAuNDg4LDEuMTg4bC0xLjkwMiw0Ljc0MmwyLjgyOCwyLjgyOGw0LjcyMy0xLjk0NWMwLjM3OSwwLjE4LDAuNzY2LDAuMzI0LDEuMTY0LDAuNDYxTDE0LjAzMSwzMmg0bDEuOTgtNC43NThjMC4zNzktMC4xNDEsMC43NTQtMC4yODksMS4xMTMtMC40NjFsNC43OTcsMS45MjJsMi44MjgtMi44MjhsLTEuOTY5LTQuNzczYzAuMTY4LTAuMzU5LDAuMzA1LTAuNzIzLDAuNDM4LTEuMDk0TDMyLDE3Ljk2OXpNMTUuOTY5LDIyYy0zLjMxMiwwLTYtMi42ODgtNi02czIuNjg4LTYsNi02czYsMi42ODgsNiw2UzE5LjI4MSwyMiwxNS45NjksMjJ6Jy8+PC9nPjwvc3ZnPg==';
-	ICON.CLOSE    = pre + 'jgnIGhlaWdodD0nMjgnPjxnPjxwb2x5Z29uIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBwb2ludHM9JzI4LDIyLjM5OCAxOS41OTQsMTQgMjgsNS42MDIgMjIuMzk4LDAgMTQsOC40MDIgNS41OTgsMCAwLDUuNjAyIDguMzk4LDE0IDAsMjIuMzk4IDUuNTk4LDI4IDE0LDE5LjU5OCAyMi4zOTgsMjgnLz48L2c+PC9zdmc+';
-	ICON.PAUSE    = pre + 'jQnIGhlaWdodD0nMzInPjxnPjxyZWN0IHN0eWxlPSdmaWxsOiNjY2NjY2M7JyB3aWR0aD0nOCcgaGVpZ2h0PSczMicvPjxyZWN0IHN0eWxlPSdmaWxsOiNjY2NjY2M7JyB4PScxNicgd2lkdGg9JzgnIGhlaWdodD0nMzInLz48L2c+PC9zdmc+';
-	ICON.PLAY     = pre + 'jQnIGhlaWdodD0nMzInPjxnPjxwb2x5Z29uIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBwb2ludHM9JzAsMCAyNCwxNiAwLDMyJy8+PC9nPjwvc3ZnPg==';
-	x1 = 'zInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOi';
-	x2 = '7JyBkPSdNMjEuNzg2LDIwLjY1NGMtMC42MTgtMC4xOTUtMS40MDctMC43MDMtMi4yOTEtMS41ODdjLTAuNzU3LTAuNzQyLTEuNTM5LTEuNjk4LTIuMzQtMi43NDFjLTAuMTkxLDAuMjU2LTAuMzgyLDAuNTEtMC41NzQsMC43N2MtMC41MjQsMC43MDktMS4wNTksMS40MjQtMS42MDQsMi4xMjdjMS45MDQsMi4zMSwzLjg4LDQuNTc4LDYuODA5LDQuOTUydjIuNzAxbDcuNTU2LTQuMzYybC03LjU1Ni00LjM2MlYyMC42NTR6TTkuMTkyLDExLjkzM2MwLjc1NiwwLjc0MSwxLjUzOCwxLjY5NywyLjMzOSwyLjczOWMwLjE5NS0wLjI2MiwwLjM5LTAuNTIxLDAuNTg3LTAuNzg4YzAuNTItMC43MDMsMS4wNTEtMS40MTIsMS41OTItMi4xMWMtMi4wMzItMi40NjMtNC4xMzMtNC45MDctNy4zOTYtNS4wMjVoLTMuNXYzLjVoMy41QzYuOTY5LDEwLjIyMyw3Ljk5NiwxMC43MzUsOS4xOTIsMTEuOTMzek0yMS43ODYsMTAuMzQxdjIuNTM1bDcuNTU2LTQuMzYzbC03LjU1Ni00LjM2M3YyLjY0N2MtMS45MDQsMC4yMTktMy40MjUsMS4zNDgtNC43NTEsMi42NDRjLTIuMTk2LDIuMTgzLTQuMTE2LDUuMTY3LTYuMDExLDcuNTM4Yy0xLjg2NywyLjQzOC0zLjc0MSwzLjg4OC00LjcxMiwzLjc3MWgtMy41djMuNWgzLjVjMi4xODUtMC4wMjksMy44NzktMS4yNjYsNS4zNC0yLjY5M2MyLjE5NC0yLjE4NCw0LjExNi01LjE2Nyw2LjAwOS03LjUzOEMxOS4yMDUsMTIuMDAzLDIwLjc0NiwxMC42NzksMjEuNzg2LDEwLjM0MXonLz48L2c+PC9zdmc+';
-	ICON.RANDOM   = pre + x1 + 'M2NjY2NjY' + x2;
-	ICON.RANDOM_A = pre + x1 + 'NkZGRkZGQ' + x2;
-	x1 = 'zInIGhlaWdodD0nMjQnPjxnPjxwYXRoIHN0eWxlPSdmaWxsOi';
-	x2 = '7JyBkPSdNMjgsMTRjMCwxLjEwMi0wLjg5OCwyLTIsMkg3Ljk5MnYtNEwwLDE4bDcuOTkyLDZ2LTRIMjZjMy4zMDksMCw2LTIuNjk1LDYtNkgyOHonLz48cGF0aCBzdHlsZT0nZmlsbDoj';
-	x3 = 'OycgZD0nTTYsOGgxOHY0bDgtNmwtOC02djRINmMtMy4zMDksMC02LDIuNjg4LTYsNmg0QzQsOC44OTgsNC44OTgsOCw2LDh6Jy8+PC9nPjwvc3ZnPg==';
-	ICON.REPEAT   = pre + x1 + 'M2NjY2NjY' + x2 + 'NjY2NjY2' + x3;
-	ICON.REPEAT_A = pre + x1 + 'NkZGRkZGQ' + x2 + 'ZGRkZGRk' + x3;
-	pre = x1 = x2 = x3 = null;
+	ICON = {
+		// SVG icons from Iconic icon set http://somerandomdude.com/work/iconic/
+		// Icons encoded in base64 because Opera have bug with raw svg in url()
+		DELAY    : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBkPSdNMTYsNGM2LjYxNywwLDEyLDUuMzgzLDEyLDEycy01LjM4MywxMi0xMiwxMlM0LDIyLjYxNyw0LDE2UzkuMzgzLDQsMTYsNE0xNiwwQzcuMTY0LDAsMCw3LjE2NCwwLDE2czcuMTY0LDE2LDE2LDE2czE2LTcuMTY0LDE2LTE2UzI0LjgzNiwwLDE2LDBMMTYsMHonLz48cGF0aCBzdHlsZT0nZmlsbDojY2NjY2NjOycgZD0nTTIxLjQyMiwxOC41NzhMMTgsMTUuMTUyVjhoLTQuMDIzdjcuOTkyYzAsMC42MDIsMC4yNzcsMS4xMjEsMC42OTUsMS40OTJsMy45MjIsMy45MjJMMjEuNDIyLDE4LjU3OHonLz48L2c+PC9zdmc+',
+		NEXT     : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBkPSdNMTYuMDE2LDBsLTUuNjY4LDUuNjcyYzAsMCwzLjE4LDMuMTgsNi4zMTIsNi4zMTJIMHY4LjAyN2gxNi42NmwtNi4zMTYsNi4zMTZMMTYuMDE2LDMyTDMyLDE2TDE2LjAxNiwweicvPjwvZz48L3N2Zz4=',
+		PREV     : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBkPSdNMTUuOTg0LDMybDUuNjcyLTUuNjcyYzAsMC0zLjE4LTMuMTgtNi4zMTItNi4zMTJIMzJ2LTguMDIzSDE1LjM0NGw2LjMxMi02LjMyTDE1Ljk4NCwwTDAsMTZMMTUuOTg0LDMyeicvPjwvZz48L3N2Zz4=',
+		SETTINGS : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBkPSdNMzIsMTcuOTY5di00bC00Ljc4MS0xLjk5MmMtMC4xMzMtMC4zNzUtMC4yNzMtMC43MzgtMC40NDUtMS4wOTRsMS45My00LjgwNUwyNS44NzUsMy4yNWwtNC43NjIsMS45NjFjLTAuMzYzLTAuMTc2LTAuNzM0LTAuMzI0LTEuMTE3LTAuNDYxTDE3Ljk2OSwwaC00bC0xLjk3Nyw0LjczNGMtMC4zOTgsMC4xNDEtMC43ODEsMC4yODktMS4xNiwwLjQ2OWwtNC43NTQtMS45MUwzLjI1LDYuMTIxbDEuOTM4LDQuNzExQzUsMTEuMjE5LDQuODQ4LDExLjYxMyw0LjcwMywxMi4wMkwwLDE0LjAzMXY0bDQuNzA3LDEuOTYxYzAuMTQ1LDAuNDA2LDAuMzAxLDAuODAxLDAuNDg4LDEuMTg4bC0xLjkwMiw0Ljc0MmwyLjgyOCwyLjgyOGw0LjcyMy0xLjk0NWMwLjM3OSwwLjE4LDAuNzY2LDAuMzI0LDEuMTY0LDAuNDYxTDE0LjAzMSwzMmg0bDEuOTgtNC43NThjMC4zNzktMC4xNDEsMC43NTQtMC4yODksMS4xMTMtMC40NjFsNC43OTcsMS45MjJsMi44MjgtMi44MjhsLTEuOTY5LTQuNzczYzAuMTY4LTAuMzU5LDAuMzA1LTAuNzIzLDAuNDM4LTEuMDk0TDMyLDE3Ljk2OXpNMTUuOTY5LDIyYy0zLjMxMiwwLTYtMi42ODgtNi02czIuNjg4LTYsNi02czYsMi42ODgsNiw2UzE5LjI4MSwyMiwxNS45NjksMjJ6Jy8+PC9nPjwvc3ZnPg==',
+		CLOSE    : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMjgnIGhlaWdodD0nMjgnPjxnPjxwb2x5Z29uIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBwb2ludHM9JzI4LDIyLjM5OCAxOS41OTQsMTQgMjgsNS42MDIgMjIuMzk4LDAgMTQsOC40MDIgNS41OTgsMCAwLDUuNjAyIDguMzk4LDE0IDAsMjIuMzk4IDUuNTk4LDI4IDE0LDE5LjU5OCAyMi4zOTgsMjgnLz48L2c+PC9zdmc+',
+		PAUSE    : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMjQnIGhlaWdodD0nMzInPjxnPjxyZWN0IHN0eWxlPSdmaWxsOiNjY2NjY2M7JyB3aWR0aD0nOCcgaGVpZ2h0PSczMicvPjxyZWN0IHN0eWxlPSdmaWxsOiNjY2NjY2M7JyB4PScxNicgd2lkdGg9JzgnIGhlaWdodD0nMzInLz48L2c+PC9zdmc+',
+		PLAY     : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMjQnIGhlaWdodD0nMzInPjxnPjxwb2x5Z29uIHN0eWxlPSdmaWxsOiNjY2NjY2M7JyBwb2ludHM9JzAsMCAyNCwxNiAwLDMyJy8+PC9nPjwvc3ZnPg==',
+		RANDOM   : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiM2NjY2NjY7JyBkPSdNMjEuNzg2LDIwLjY1NGMtMC42MTgtMC4xOTUtMS40MDctMC43MDMtMi4yOTEtMS41ODdjLTAuNzU3LTAuNzQyLTEuNTM5LTEuNjk4LTIuMzQtMi43NDFjLTAuMTkxLDAuMjU2LTAuMzgyLDAuNTEtMC41NzQsMC43N2MtMC41MjQsMC43MDktMS4wNTksMS40MjQtMS42MDQsMi4xMjdjMS45MDQsMi4zMSwzLjg4LDQuNTc4LDYuODA5LDQuOTUydjIuNzAxbDcuNTU2LTQuMzYybC03LjU1Ni00LjM2MlYyMC42NTR6TTkuMTkyLDExLjkzM2MwLjc1NiwwLjc0MSwxLjUzOCwxLjY5NywyLjMzOSwyLjczOWMwLjE5NS0wLjI2MiwwLjM5LTAuNTIxLDAuNTg3LTAuNzg4YzAuNTItMC43MDMsMS4wNTEtMS40MTIsMS41OTItMi4xMWMtMi4wMzItMi40NjMtNC4xMzMtNC45MDctNy4zOTYtNS4wMjVoLTMuNXYzLjVoMy41QzYuOTY5LDEwLjIyMyw3Ljk5NiwxMC43MzUsOS4xOTIsMTEuOTMzek0yMS43ODYsMTAuMzQxdjIuNTM1bDcuNTU2LTQuMzYzbC03LjU1Ni00LjM2M3YyLjY0N2MtMS45MDQsMC4yMTktMy40MjUsMS4zNDgtNC43NTEsMi42NDRjLTIuMTk2LDIuMTgzLTQuMTE2LDUuMTY3LTYuMDExLDcuNTM4Yy0xLjg2NywyLjQzOC0zLjc0MSwzLjg4OC00LjcxMiwzLjc3MWgtMy41djMuNWgzLjVjMi4xODUtMC4wMjksMy44NzktMS4yNjYsNS4zNC0yLjY5M2MyLjE5NC0yLjE4NCw0LjExNi01LjE2Nyw2LjAwOS03LjUzOEMxOS4yMDUsMTIuMDAzLDIwLjc0NiwxMC42NzksMjEuNzg2LDEwLjM0MXonLz48L2c+PC9zdmc+',
+		RANDOM_A : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMzInPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNkZGRkZGQ7JyBkPSdNMjEuNzg2LDIwLjY1NGMtMC42MTgtMC4xOTUtMS40MDctMC43MDMtMi4yOTEtMS41ODdjLTAuNzU3LTAuNzQyLTEuNTM5LTEuNjk4LTIuMzQtMi43NDFjLTAuMTkxLDAuMjU2LTAuMzgyLDAuNTEtMC41NzQsMC43N2MtMC41MjQsMC43MDktMS4wNTksMS40MjQtMS42MDQsMi4xMjdjMS45MDQsMi4zMSwzLjg4LDQuNTc4LDYuODA5LDQuOTUydjIuNzAxbDcuNTU2LTQuMzYybC03LjU1Ni00LjM2MlYyMC42NTR6TTkuMTkyLDExLjkzM2MwLjc1NiwwLjc0MSwxLjUzOCwxLjY5NywyLjMzOSwyLjczOWMwLjE5NS0wLjI2MiwwLjM5LTAuNTIxLDAuNTg3LTAuNzg4YzAuNTItMC43MDMsMS4wNTEtMS40MTIsMS41OTItMi4xMWMtMi4wMzItMi40NjMtNC4xMzMtNC45MDctNy4zOTYtNS4wMjVoLTMuNXYzLjVoMy41QzYuOTY5LDEwLjIyMyw3Ljk5NiwxMC43MzUsOS4xOTIsMTEuOTMzek0yMS43ODYsMTAuMzQxdjIuNTM1bDcuNTU2LTQuMzYzbC03LjU1Ni00LjM2M3YyLjY0N2MtMS45MDQsMC4yMTktMy40MjUsMS4zNDgtNC43NTEsMi42NDRjLTIuMTk2LDIuMTgzLTQuMTE2LDUuMTY3LTYuMDExLDcuNTM4Yy0xLjg2NywyLjQzOC0zLjc0MSwzLjg4OC00LjcxMiwzLjc3MWgtMy41djMuNWgzLjVjMi4xODUtMC4wMjksMy44NzktMS4yNjYsNS4zNC0yLjY5M2MyLjE5NC0yLjE4NCw0LjExNi01LjE2Nyw2LjAwOS03LjUzOEMxOS4yMDUsMTIuMDAzLDIwLjc0NiwxMC42NzksMjEuNzg2LDEwLjM0MXonLz48L2c+PC9zdmc+',
+		REPEAT   : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMjQnPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiM2NjY2NjY7JyBkPSdNMjgsMTRjMCwxLjEwMi0wLjg5OCwyLTIsMkg3Ljk5MnYtNEwwLDE4bDcuOTkyLDZ2LTRIMjZjMy4zMDksMCw2LTIuNjk1LDYtNkgyOHonLz48cGF0aCBzdHlsZT0nZmlsbDojNjY2NjY2OycgZD0nTTYsOGgxOHY0bDgtNmwtOC02djRINmMtMy4zMDksMC02LDIuNjg4LTYsNmg0QzQsOC44OTgsNC44OTgsOCw2LDh6Jy8+PC9nPjwvc3ZnPg==',
+		REPEAT_A : 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0ndXRmLTgnPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICdodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQnPjxzdmcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nMzInIGhlaWdodD0nMjQnPjxnPjxwYXRoIHN0eWxlPSdmaWxsOiNkZGRkZGQ7JyBkPSdNMjgsMTRjMCwxLjEwMi0wLjg5OCwyLTIsMkg3Ljk5MnYtNEwwLDE4bDcuOTkyLDZ2LTRIMjZjMy4zMDksMCw2LTIuNjk1LDYtNkgyOHonLz48cGF0aCBzdHlsZT0nZmlsbDojZGRkZGRkOycgZD0nTTYsOGgxOHY0bDgtNmwtOC02djRINmMtMy4zMDksMC02LDIuNjg4LTYsNmg0QzQsOC44OTgsNC44OTgsOCw2LDh6Jy8+PC9nPjwvc3ZnPg=='
+	};
+	HISTORY = new SlideshowHistory();
+	SLIDES = [];
 
 	addHTML();
 	addCSS();
 	addElements();
 	addListeners();
-	addSettings();
 	loadSettings();
 }
 
@@ -1771,7 +1839,7 @@ function doScript() {
 function addHTML() {
 	$append(doc.body, [
 		$add('\
-<div id="slow" class="slow">\n\
+<div id="slow-slow" class="slow-slow">\n\
 	<div id="slow-menu">\n\
 		<a id="slow-btn-start" class="slow-btn slow-black slow-ttl-start"><div class="slow-icon slow-normal slow-icon-play"></div></a>\n\
 	</div>\n\
@@ -1821,7 +1889,7 @@ function addHTML() {
 
 function addCSS() {
 	$append(doc.head, [$new('style', {'type': 'text/css', 'text': '\
-.slow div, .slow p, .slow span, .slow h1, .slow hr, .slow a, .slow a:link, .slow a:hover, .slow a:active, .slow a.visited, .slow img, .slow label, .slow input, .slow input:focus {\n\
+.slow-slow div, .slow-slow p, .slow-slow span, .slow-slow h1, .slow-slow hr, .slow-slow a, .slow-slow a:link, .slow-slow a:hover, .slow-slow a:active, .slow-slow a.visited, .slow-slow img, .slow-slow label, .slow-slow input, .slow-slow input:focus {\n\
 	background: transparent;\n\
 	border-radius: 0;\n\
 	border: 0;\n\
@@ -1837,16 +1905,16 @@ function addCSS() {
 	' + nav.cssFix + 'transition: none;\n\
 	vertical-align: baseline;\n\
 }\n\
-#slow a:not(.slow-btn) {text-decoration: underline !important;}\n\
-#slow a:not(.slow-btn):hover {color: #08c !important;}\n\
-#slow a.slow-btn, #slow a.slow-btn:hover {color: #fff !important;} /*4chan*/\n\
-#slow a.slow-btn.slow-inactive, #slow a.slow-btn.slow-inactive:hover {color: #aaa !important;}\n\
-.slow select, .slow select:focus {border-radius: 0; border: default; padding: 1px; color: black; font-size: 13px; height: auto; margin: 0; width: auto;}\n\
-.slow input , .slow  input:focus {background-color: rgba(0, 0, 0, 0); border-radius: 3px; border: 1px solid white; margin-bottom: 10px; margin-right: 3px;}\n\
-.slow input[type="number"] {width: 50px; height: 25px;}\n\
-.slow input[type="number"]:focus {border: 1px solid #08c;}\n\
-.slow label {display: block;}\n\
-.slow hr {\n\
+#slow-slow a:not(.slow-btn) {text-decoration: underline !important;}\n\
+#slow-slow a:not(.slow-btn):hover {color: #08c !important;}\n\
+#slow-slow a.slow-btn, #slow-slow a.slow-btn:hover {color: #fff !important;} /*4chan*/\n\
+#slow-slow a.slow-btn.slow-inactive, #slow-slow a.slow-btn.slow-inactive:hover {color: #aaa !important;}\n\
+.slow-slow select, .slow-slow select:focus {border-radius: 0; border: default; padding: 1px; color: black; font-size: 13px; height: auto; margin: 0; width: auto;}\n\
+.slow-slow input , .slow-slow  input:focus {background-color: rgba(0, 0, 0, 0); border-radius: 3px; border: 1px solid white; margin-bottom: 10px; margin-right: 3px;}\n\
+.slow-slow input[type="number"] {width: 50px; height: 25px;}\n\
+.slow-slow input[type="number"]:focus {border: 1px solid #08c;}\n\
+.slow-slow label {display: block;}\n\
+.slow-slow hr {\n\
 	background-color: white;\n\
 	border: 0;\n\
 	color: white;\n\
@@ -1874,13 +1942,13 @@ function addCSS() {
 }\n\
 #slow-settings-bar::before {margin-right: -1px; width: 10px;}\n\
 #slow-settings-bar::after {width: 100%;}\n\
-#slow div.slow-invisible {display: none;}\n\
-#slow #slow-controls.slow-invisible {display: block; opacity: 0;}\n\
-#slow #slow-settings.slow-invisible, #slow-controls.slow-invisible #slow-settings {\n\
+#slow-slow div.slow-invisible {display: none;}\n\
+#slow-slow #slow-controls.slow-invisible {display: block; opacity: 0;}\n\
+#slow-slow #slow-settings.slow-invisible, #slow-controls.slow-invisible #slow-settings {\n\
 	display: block;\n\
 	' + nav.cssFix + 'transform: translate(0, -100%);\n\
 }\n\
-#slow #slow-thumbs-ribbon.slow-invisible, #slow-controls.slow-invisible #slow-thumbs-ribbon {\n\
+#slow-slow #slow-thumbs-ribbon.slow-invisible, #slow-controls.slow-invisible #slow-thumbs-ribbon {\n\
 	display: block;\n\
 	' + nav.cssFix + 'transform: translate(0, 100%);\n\
 }\n\
@@ -1893,14 +1961,14 @@ function addCSS() {
 	padding: 10px;\n\
 	width: 255px;\n\
 }\n\
-#slow h1 {\n\
+#slow-slow h1 {\n\
 	display: table;\n\
 	height: 25px;\n\
 	letter-spacing: .3em;\n\
 	margin: 5px 0;\n\
 	width: 100%;\n\
 }\n\
-#slow h1 span {\n\
+#slow-slow h1 span {\n\
 	display: table-cell;\n\
 	font-weight: bold;\n\
 	text-align: center;\n\
@@ -1929,13 +1997,13 @@ function addCSS() {
 }\n\
 #slow-screen {bottom: 0; left:   0;}\n\
 #slow-settings label:last-child input {margin-bottom: 0;}\n\
-#slow label.slow-ttl-lang {float: left; margin-left: 5px;}\n\
+#slow-slow label.slow-ttl-lang {float: left; margin-left: 5px;}\n\
 #slow-settings-buttons a {float: right;}\n\
-#slow .slow-normal {height: 25px; width: 25px;}\n\
-#slow .slow-small  {height: 15px; width: 15px;}\n\
+#slow-slow .slow-normal {height: 25px; width: 25px;}\n\
+#slow-slow .slow-small  {height: 15px; width: 15px;}\n\
 #slow-btn-random {left: 35px;}\n\
 #slow-btn-repeat {left: 60px;}\n\
-#slow [unselectable="on"] {\n\
+#slow-slow [unselectable="on"] {\n\
 	cursor: default;\n\
 	' + nav.cssFix + 'user-select: none;\n\
 }\n\
@@ -2026,36 +2094,36 @@ function addCSS() {
 #slow-btn-start.slow-top.slow-right {border-bottom-left-radius: 5px;}\n\
 #slow-btn-start.slow-bottom.slow-right {border-top-left-radius: 5px;}\n\
 #slow-btn-start.slow-bottom.slow-left {border-top-right-radius: 5px;}\n\
-#slow .slow-top    {top:    0px;}\n\
-#slow .slow-bottom {bottom: 0px;}\n\
-#slow .slow-left   {left:   0px;}\n\
-#slow .slow-right  {right:  0px;}\n\
-#slow .slow-middle {top:    50%; margin-top: -17.5px;}\n\
-#slow :not(#slow-menu).slow-top, #slow :not(#slow-menu).slow-bottom, #slow :not(#slow-menu).slow-left, #slow :not(#slow-menu).slow-right, #slow :not(#slow-menu).slow-middle {position: absolute;}\n\
-#slow .slow-btn {display: block; padding: 5px;}\n\
-#slow .slow-icon {\n\
+#slow-slow .slow-top    {top:    0px;}\n\
+#slow-slow .slow-bottom {bottom: 0px;}\n\
+#slow-slow .slow-left   {left:   0px;}\n\
+#slow-slow .slow-right  {right:  0px;}\n\
+#slow-slow .slow-middle {top:    50%; margin-top: -17.5px;}\n\
+#slow-slow :not(#slow-menu).slow-top, #slow-slow :not(#slow-menu).slow-bottom, #slow-slow :not(#slow-menu).slow-left, #slow-slow :not(#slow-menu).slow-right, #slow-slow :not(#slow-menu).slow-middle {position: absolute;}\n\
+#slow-slow .slow-btn {display: block; padding: 5px;}\n\
+#slow-slow .slow-icon {\n\
 	background-color: transparent;\n\
 	background-origin: content-box;\n\
 	background-position: center center;\n\
 	background-repeat: no-repeat;\n\
 	background-size: contain;\n\
 }\n\
-#slow  .slow-black,      #slow a.slow-thumb        {background-color: rgba(0,0,0,0.8);}\n\
-#slow a.slow-btn:hover,  #slow a.slow-thumb:hover  {background-color: rgba(255,255,255,0.5);}\n\
-#slow a.slow-btn:active, #slow a.slow-thumb:active {background-color: rgba(127,127,127,0.5);}\n\
-#slow .slow-icon-close    {background-image: url("' + ICON.CLOSE    + '");}\n\
-#slow .slow-icon-delay    {background-image: url("' + ICON.DELAY    + '");}\n\
-#slow .slow-icon-next     {background-image: url("' + ICON.NEXT     + '");}\n\
-#slow .slow-icon-pause    {background-image: url("' + ICON.PAUSE    + '");}\n\
-#slow .slow-icon-play     {background-image: url("' + ICON.PLAY     + '");}\n\
-#slow .slow-icon-prev     {background-image: url("' + ICON.PREV     + '");}\n\
-#slow .slow-icon-random   {background-image: url("' + ICON.RANDOM   + '");}\n\
-#slow .slow-icon-random-a {background-image: url("' + ICON.RANDOM_A + '");}\n\
-#slow .slow-icon-repeat   {background-image: url("' + ICON.REPEAT   + '");}\n\
-#slow .slow-icon-repeat-a {background-image: url("' + ICON.REPEAT_A + '");}\n\
-#slow .slow-icon-settings {background-image: url("' + ICON.SETTINGS + '");}\n\
-#slow .slow-img-zoomed {border: 1px solid white;}\n\
-#slow .slow-img-fixed  {border: 1px solid transparent;}\n\
+#slow-slow  .slow-black,      #slow-slow a.slow-thumb        {background-color: rgba(0,0,0,0.8);}\n\
+#slow-slow a.slow-btn:hover,  #slow-slow a.slow-thumb:hover  {background-color: rgba(255,255,255,0.5);}\n\
+#slow-slow a.slow-btn:active, #slow-slow a.slow-thumb:active {background-color: rgba(127,127,127,0.5);}\n\
+#slow-slow .slow-icon-close    {background-image: url("' + ICON.CLOSE    + '");}\n\
+#slow-slow .slow-icon-delay    {background-image: url("' + ICON.DELAY    + '");}\n\
+#slow-slow .slow-icon-next     {background-image: url("' + ICON.NEXT     + '");}\n\
+#slow-slow .slow-icon-pause    {background-image: url("' + ICON.PAUSE    + '");}\n\
+#slow-slow .slow-icon-play     {background-image: url("' + ICON.PLAY     + '");}\n\
+#slow-slow .slow-icon-prev     {background-image: url("' + ICON.PREV     + '");}\n\
+#slow-slow .slow-icon-random   {background-image: url("' + ICON.RANDOM   + '");}\n\
+#slow-slow .slow-icon-random-a {background-image: url("' + ICON.RANDOM_A + '");}\n\
+#slow-slow .slow-icon-repeat   {background-image: url("' + ICON.REPEAT   + '");}\n\
+#slow-slow .slow-icon-repeat-a {background-image: url("' + ICON.REPEAT_A + '");}\n\
+#slow-slow .slow-icon-settings {background-image: url("' + ICON.SETTINGS + '");}\n\
+#slow-slow .slow-img-zoomed {border: 1px solid white;}\n\
+#slow-slow .slow-img-fixed  {border: 1px solid transparent;}\n\
 .slow-anim #slow-controls {' + nav.cssFix + 'transition: opacity .4s ease-in-out}\n\
 .slow-anim #slow-settings {' + nav.cssFix + 'transition: ' + nav.cssFix + 'transform .4s ease-in}\n\
 .slow-anim #slow-settings-content {' + nav.cssFix + 'transition: left .4s ease-in-out}\n\
