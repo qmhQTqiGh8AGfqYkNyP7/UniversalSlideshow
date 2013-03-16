@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.3.16.0
+// @version     13.3.16.1
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.3.16.0'
+var version = '13.3.16.1'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -299,8 +299,10 @@ var PROFILES = [
 				aib.brit ? 'threadlinktext' :
 				'filesize';
 			this.aib = aib;
-			this.desu = !!$id('de-main'); // Dollchan extension
 			return 1;
+		},
+		'init': function() {
+			this.desu = !!$id('de-main'); // Dollchan extension
 		},
 		'scan': function() {
 			function isHidden(elem) {
@@ -372,6 +374,7 @@ var timers = {
 
 //state vars
 var S = {
+	showStarted    : false, // is slideshow initialized
 	settingsPanel  : false, // is settings panel initialized
 	isPlaying      : false, // is slideshow playing
 	zoomActive     : false, // is image in zoom mode
@@ -1226,6 +1229,10 @@ function rescan() {
 function startSlideshow() {
 	clearThumbs();
 	$toggleDisplay($sid('load'), true);
+	if(!S.showStarted) {
+		if(profile.init) profile.init();
+		S.showStarted = true;
+	}
 	profile.scan();
 }
 
