@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.3.3.1
+// @version     13.3.16.0
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.3.3.1'
+var version = '13.3.16.0'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
