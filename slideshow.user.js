@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Universal Slideshow
-// @version     13.3.16.1
+// @version     13.3.18.0
 // @license     MIT
 // @description Adds slideshow to large amount of sites
 // @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.3.16.1'
+var version = '13.3.18.0'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -23,7 +23,7 @@ var settings;
 var DEFAULT_SETTINGS = {
 	/*Boolean*/ 'css3Animation':     true,  //
 	/*Boolean*/ 'defaultPlay':       false, //
-	/*Boolean*/ 'desuPostHide':    true,  // Dollchan Extension Tools feature
+	/*Boolean*/ 'desuPostHide':      true,  // Dollchan Extension Tools feature
 	/*Boolean*/ 'hideLaunchButton':  false, //
 	/*Boolean*/ 'hideScrollbar':     true,  //
 	/*Boolean*/ 'keepNextHistory':   true,  //
@@ -105,7 +105,7 @@ var LOC = {
 			    'prevSlide':     ['Пред. слайд', 'Prev image'],
 			'key-prevSlide':     ['Z, ←, ↓', 'Z, ←, ↓', 'Z, ←, ↓'],
 			    'quit':          ['Выход', 'Quit'],
-			'key-quit':          ['Q, Escape', 'Q, Escape', 'Q, Escape'],
+			'key-quit':          ['Q, Escape', 'Q, Escape'],
 			    'toggleZoom':    ['Режим увеличения', 'Toggle zoom'],
 			'key-toggleZoom':    ['Двойной клик по слайду', 'Double click on image'],
 			    'zoomInOut':     ['Увеличить/уменьшить', 'Zoom in/out'],
@@ -169,6 +169,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................AG.RU
 		'name': 'ag.ru',
+		'ajax': false,
 		'test': function() {
 			return $checkSite(/ag\.ru/, /\/games\/.*\/screenshots/, null);
 		},
@@ -189,6 +190,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................RMART.ORG
 		'name': 'rmart.org',
+		'ajax': false,
 		'test': function() {
 			return $checkSite(/rmart\.org/);
 		},
@@ -206,7 +208,37 @@ var PROFILES = [
 					thumb = img.src,
 					post  = img.alt;
 				$getUrl(url, function(xmlhttp) {
-					var image = /<img[^<>]*?id=['"]image['"][^<]*src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
+					var image = /<img[^<>]*?id=['"]image['"][^<]*?src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
+					addSlide(image, thumb, post, val);
+					if(++i >= n) scanOver();
+					else step();
+				});
+			};
+			step();
+		}
+	},
+	{ //............................................................................................................PIXIV.NET
+		'name': 'pixiv.net',
+		'ajax': false,
+		'test': function() {
+			return $checkSite(/pixiv\.net/);
+		},
+		'scan': function() {
+			var temp = $Q('li.image-item > a.work', doc);
+			var i = 0, n = temp.length;
+			if(n == 0) {
+				scanOver();
+				return;
+			}
+			var step = function() {
+				var val = temp[i],
+					img = $q('img', val),
+					ttl = $q('h1', val),
+					url = val.href; //.replace(/mode=medium/i, 'mode=big'),
+					thumb = img.src,
+					post  = ttl.title;
+				$getUrl(url, function(xmlhttp) {
+					var image = /<div[^<>]*?class=['"]works_display['"].*?<img[^<>]*?src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
 					addSlide(image, thumb, post, val);
 					if(++i >= n) scanOver();
 					else step();
@@ -217,6 +249,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................E621.NET
 		'name': 'e621.net',
+		'ajax': false,
 		'test': function() {
 			return $checkSite(/e621\.net/, /\/post/, /\/post\/show\//);
 		},
@@ -245,6 +278,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................MULTATOR.RU
 		'name': 'doodle.multator.ru',
+		'ajax': false,
 		'test': function() {
 			return $checkSite(/doodle\.multator\.ru/);
 		},
@@ -272,6 +306,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................IMAGEBOARDS
 		'name': 'imageboard',
+		'ajax': true,
 		'test': function() {
 			var dm = $domain(window.location.hostname);
 			var aib = {};
@@ -346,6 +381,7 @@ var PROFILES = [
 	},
 	{ //............................................................................................................DEFAULT
 		'name': 'default',
+		'ajax': true,
 		'test': function() {
 			if(window.self != window.top) return -1;
 			var temp = $Q(qImgLink, doc);
@@ -376,6 +412,7 @@ var timers = {
 var S = {
 	showStarted    : false, // is slideshow initialized
 	settingsPanel  : false, // is settings panel initialized
+	settingsDefault: false, // for gray save/load buttons
 	isPlaying      : false, // is slideshow playing
 	zoomActive     : false, // is image in zoom mode
 	imageMouseOver : false, // is mouse cursor over image
@@ -894,8 +931,16 @@ function getPrevSlide() {
 
 function showSlide(slide) {
 	if(!slide || currentSlide === slide) return;
-	HISTORY.push(slide);
-	checkHistoryLength();
+	if((settings.useHistory && settings.maxHistoryLength != 0) || settings.random) {
+		HISTORY.push(slide);
+		// check history length
+		if(!settings.keepNextHistory) {
+			HISTORY.trimTail(HISTORY.index + 1);
+		}
+		if(settings.maxHistoryLength != 0) {
+			HISTORY.trimHead(settings.maxHistoryLength);
+		}
+	}
 
 	currentSlide = slide;
 	   nextSlide = getNextSlide();
@@ -926,15 +971,6 @@ function showSlide(slide) {
 	toggleZoom(false);
 	$forceRedraw($sid('img-container'));
 	if(settings.scrollToSource && currentSlide.elem) currentSlide.elem.scrollIntoView();
-}
-
-function checkHistoryLength() {
-	if(!settings.keepNextHistory) {
-		HISTORY.trimTail(HISTORY.index + 1);
-	}
-	if((!settings.random || settings.repeat) && settings.maxHistoryLength != 0) {
-		HISTORY.trimHead(settings.maxHistoryLength);
-	}
 }
 
 /*==============================================================================
@@ -1163,6 +1199,7 @@ function toggleSlideshow() {
 }
 
 function togglePause(isOn) {
+	if(!nextSlide) return;
 	if(isOn == undefined) {
 		S.isPlaying = !S.isPlaying;
 	} else {
@@ -1218,15 +1255,12 @@ function checkPostVisibility(show) {
 	$forceRedraw($sid('img-container'));
 }
 
+// TODO: completely rewrite this section.
 /*==============================================================================
                                     Launch
 ==============================================================================*/
 
 function rescan() {
-	// TODO
-}
-
-function startSlideshow() {
 	clearThumbs();
 	$toggleDisplay($sid('load'), true);
 	if(!S.showStarted) {
@@ -1236,14 +1270,27 @@ function startSlideshow() {
 	profile.scan();
 }
 
+function startSlideshow() {
+	if(!S.showStarted || profile.ajax) {
+		rescan();
+	} else {
+		showSlideshow();
+	}
+}
+
+// just temporary
 function scanOver() {
+	for (var i = 0, n = SLIDES.length; i < n; i++) {
+		addThumb(SLIDES[i], i);
+	}
+	showSlideshow();
+}
+
+function showSlideshow() {
 	$toggleDisplay($sid('load'), false);
 	if(SLIDES.length <= 0) {
 		alert(profile.name + '\n' + LOC.str.noSlidesFound[settings.lang]);
 		return;
-	}
-	for (var i = 0, n = SLIDES.length; i < n; i++) {
-		addThumb(SLIDES[i], i);
 	}
 
 	if(settings.defaultPlay || S.isPlaying) {
@@ -1266,7 +1313,7 @@ function scanOver() {
 			showSlide(SLIDES[0]);
 		}
 	}
-
+	fitImage();
 	$event($sid('screen'),   EventHandlers.screenMove  );
 	$event($sid('controls'), EventHandlers.ctrlsOverOut);
 	$event(window, EventHandlers.windowResize);
@@ -1350,6 +1397,7 @@ function loadSettings() {
 		if(key in settingsUpdater) settingsUpdater[key].call();
 	}
 	if(nav.isGlobal && isEqual(settings, settings.__proto__, keepLocal)) {
+		S.settingsDefault = true;
 		$addClass($sid('btn-loadGlobal'), 'slow-inactive');
 		$addClass($sid('btn-saveGlobal'), 'slow-inactive');
 	}
@@ -1389,7 +1437,7 @@ var settingsUpdater = {
 		$toggleClass($sid('menu'), 'slow-left', 'slow-right', isLeft);
 		$toggleClass($sid('btn-start'), 'slow-left', 'slow-right', isLeft);
 	},
-	'desuPostHide': function() {rescan();},
+	'desuPostHide': function() {/*TODO rescan();*/},
 	'thumbs': function() {
 		if(!settings.overlayThumbs && !S.zoomActive)
 			$oneTransition($sid('img-container'));
@@ -1398,6 +1446,9 @@ var settingsUpdater = {
 	},
 	'random': function() {
 		$toggleClass($sid('btn-random').childNodes[0], 'slow-icon-random-a', 'slow-icon-random', settings.random);
+		if((!settings.useHistory || settings.maxHistoryLength == 0) && (!settings.random || settings.repeat)) {
+			HISTORY.clear();
+		}
 		if(SLIDES.length) nextSlide = getNextSlide();
 	},
 	'repeat': function() {
@@ -1427,6 +1478,9 @@ var settingsUpdater = {
 	'controlsHideDelay': function() {
 		checkControlsVisibility();
 	},
+	'useHistory': function() {
+		HISTORY.clear();
+	},
 	'lang': function() {
 		for(x in LOC.ttl) {
 			var elements = $Q('.slow-ttl-' + x, $sid('slow'));
@@ -1455,9 +1509,7 @@ function setSettingsProperty(name, value) {
 					delete settings[name];
 				}
 			}
-			// set save/load buttons inactive
-			$addClass($sid('btn-loadGlobal'), 'slow-inactive');
-			$addClass($sid('btn-saveGlobal'), 'slow-inactive');
+			S.settingsDefault = true;
 		} else {
 			// copy all global settings to local
 			for(key in settings.__proto__) {
@@ -1465,9 +1517,11 @@ function setSettingsProperty(name, value) {
 					settings[key] = settings.__proto__[key];
 				}
 			}
-			$removeClass($sid('btn-loadGlobal'), 'slow-inactive');
-			$removeClass($sid('btn-saveGlobal'), 'slow-inactive');
+			S.settingsDefault = false;
 		}
+		// set save/load buttons inactive
+		$toggleClass($sid('btn-loadGlobal'), 'slow-inactive', '', S.settingsDefault);
+		$toggleClass($sid('btn-saveGlobal'), 'slow-inactive', '', S.settingsDefault);
 	}
 	window.localStorage.setItem('SLOW_Config', JSON.stringify(settings));
 }
@@ -1616,10 +1670,13 @@ function addSettings() {
 				}
 				setGlobal('SLOW_Config', JSON.stringify(global));
 				window.localStorage.setItem('SLOW_Config', '');
+				S.settingsDefault = true;
 				$addClass($sid('btn-loadGlobal'), 'slow-inactive');
 				$addClass($sid('btn-saveGlobal'), 'slow-inactive');
 			})
 		]);
+		$toggleClass($sid('btn-loadGlobal'), 'slow-inactive', '', S.settingsDefault);
+		$toggleClass($sid('btn-saveGlobal'), 'slow-inactive', '', S.settingsDefault);
 	}
 
 	// update inputs
